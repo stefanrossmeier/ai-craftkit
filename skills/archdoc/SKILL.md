@@ -72,6 +72,19 @@ Do not modify application source code.
 
 Do not modify unrelated documentation unless the user explicitly asks.
 
+## Lightweight Provenance Block
+
+Every generated Markdown document must include a small provenance block near the top, directly after the title and before the document status fields.
+
+The block must include only information that is directly available. Do not guess, infer, reconstruct, or invent missing metadata.
+
+Use this format:
+
+```markdown
+> Generated with `ai-craftkit` skill: `archdoc`  
+> Source: `<repository-url>` at commit `<commit-hash>`  
+> Prompt: `<exact-user-prompt>`
+
 ## Document Responsibilities
 
 ### `docs/REPO_MAP.md`

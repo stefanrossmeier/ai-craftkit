@@ -548,6 +548,21 @@ Do not modify application source code.
 
 Do not modify unrelated documentation unless the user explicitly asks.
 
+## Lightweight Provenance Block
+
+Every generated Markdown document must include a small provenance block near the top, directly after the title and before status fields or document metadata.
+
+This applies to generated ADR files, ADR candidate files, ADR preparation documents, and ADR indexes created or updated by this skill.
+
+The block must include only information that is directly available. Do not guess, infer, reconstruct, or invent missing metadata.
+
+Use this format:
+
+```markdown
+> Generated with `ai-craftkit` skill: `adrgen`  
+> Source: `<repository-url>` at commit `<commit-hash>`  
+> Prompt: `<exact-user-prompt>`
+
 ## Template Handling Rules
 
 Use the ADR template as the conceptual source:

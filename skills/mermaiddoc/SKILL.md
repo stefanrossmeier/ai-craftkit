@@ -236,6 +236,19 @@ credentials.*
 
 It is acceptable to record that an environment file exists, but do not copy values.
 
+## Lightweight Provenance Block
+
+Every generated Markdown diagram document must include a small provenance block near the top, directly after the title and before the purpose.
+
+The block must include only information that is directly available. Do not guess, infer, reconstruct, or invent missing metadata.
+
+Use this format:
+
+```markdown
+> Generated with `ai-craftkit` skill: `mermaiddoc`  
+> Source: `<repository-url>` at commit `<commit-hash>`  
+> Prompt: `<exact-user-prompt>`
+
 ## Diagram Design Rules
 
 Create small diagrams.
