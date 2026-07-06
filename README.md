@@ -65,7 +65,9 @@ The exact structure may evolve as the repository grows.
 
 Creates architecture documentation from a repository inspection.
 
-The skill guides an AI assistant to inspect files, identify system boundaries, describe components, and separate verified findings from assumptions. It is intended for architecture overviews, onboarding documentation, repository summaries, and technical discovery.
+The skill guides an AI assistant to inspect files, identify system boundaries, describe components, and separate verified findings from assumptions. Its canonical outputs are `REPO_MAP.md`, `ARCHITECTURE.md`, `API_SURFACE.md`, and `OPERATIONS.md`.
+
+`API_SURFACE.md` is the detailed contract document for public and integration-relevant interfaces. `ARCHITECTURE.md` stays focused on static structure and high-level interface ownership, while `OPERATIONS.md` stays focused on runtime behavior, verification, and failure handling.
 
 Use it when you want an AI assistant to explain how a codebase is structured without pretending to know more than the repository proves.
 

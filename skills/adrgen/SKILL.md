@@ -109,27 +109,7 @@ docs/adr/README.md
 
 Discovery mode should not automatically create final accepted ADRs.
 
-Discovery mode may create draft ADRs only when the user explicitly asks for it with `--write-drafts`.
-
-If the user asks for draft ADRs during discovery, create them with status `PROPOSED` or `NEEDS REVIEW`, not `ACCEPTED`, unless repository evidence or human input clearly confirms the decision.
-
-Optional examples:
-
-```text
-/adrgen discover
-/adrgen discover --scope full
-/adrgen discover --scope delta
-/adrgen discover --focus src/auth
-/adrgen discover --write-drafts
-/adrgen discover --dry-run
-/adrgen discover --no-run
-```
-
-Default behavior:
-
-```text
-/adrgen discover --scope full
-```
+If the user explicitly asks discovery mode to also create draft ADR files, create them with status `PROPOSED` or `NEEDS REVIEW`, not `ACCEPTED`, unless repository evidence or human input clearly confirms the decision.
 
 Recommended workflow:
 
@@ -190,18 +170,6 @@ Default behavior:
 - update `docs/adr/README.md`
 - update `docs/adr/ADR_CANDIDATES.md` with the generated ADR filename when safe
 
-Supported examples:
-
-```text
-/adrgen generate
-/adrgen generate --all-approved
-/adrgen generate --candidate "Use PostgreSQL for primary persistence"
-/adrgen generate --ids CAND-001,CAND-003
-/adrgen generate --status proposed
-/adrgen generate --dry-run
-/adrgen generate --no-run
-```
-
 Generate mode should not create ADRs from every candidate by default.
 
 It should require one of these signals:
@@ -214,7 +182,7 @@ Generate ADR: yes
 Suggested next step: generate ADR
 ```
 
-If no candidates are clearly approved, report the candidates that look ready and ask the user to mark them, or generate only the candidate explicitly named in the command.
+If no candidates are clearly approved, report the candidates that look ready and ask the user to mark them, or generate only a candidate the user explicitly names in natural language.
 
 Candidate marker examples:
 
@@ -331,17 +299,6 @@ Inspect the repository when:
 - the user asks to ground the ADR in codebase evidence
 - existing `REPO_MAP.md`, `ARCHITECTURE.md`, or `OPERATIONS.md` can provide useful context
 
-Optional examples:
-
-```text
-/adrgen capture
-/adrgen capture --from-file notes.md
-/adrgen capture --focus src/billing
-/adrgen capture --status accepted
-/adrgen capture --dry-run
-/adrgen capture --no-run
-```
-
 If the user provides discussion content directly, use it as the primary source. Do not invent missing participants, reasons, or agreement.
 
 ### Mode 4: Prepare
@@ -395,15 +352,11 @@ Prepare mode should include:
 
 Prepare mode may inspect the repository thoroughly when the topic touches existing code or architecture.
 
-Optional examples:
+Natural examples:
 
 ```text
 /adrgen prepare "Choose an authorization model for the API"
 /adrgen prepare "Move background jobs from cron to queue workers"
-/adrgen prepare --focus src/auth
-/adrgen prepare --from-file topic.md
-/adrgen prepare --dry-run
-/adrgen prepare --no-run
 ```
 
 Prepare mode must not claim that a decision has been made unless the user explicitly says so.
@@ -425,28 +378,6 @@ Supported commands:
 /adrgen generate
 /adrgen capture
 /adrgen prepare "<topic>"
-```
-
-Optional examples:
-
-```text
-/adrgen discover
-/adrgen discover --scope full
-/adrgen discover --scope delta
-/adrgen discover --focus src/auth
-/adrgen discover --write-drafts
-/adrgen generate
-/adrgen generate --all-approved
-/adrgen generate --ids CAND-001,CAND-003
-/adrgen generate --candidate "Use PostgreSQL for primary persistence"
-/adrgen generate --status proposed
-/adrgen capture
-/adrgen capture --from-file meeting-notes.md
-/adrgen capture --status accepted
-/adrgen prepare "Choose a persistence strategy for events"
-/adrgen prepare --focus src/jobs
-/adrgen --dry-run
-/adrgen --no-run
 ```
 
 If no mode is provided:
@@ -562,6 +493,7 @@ Use this format:
 > Generated with `ai-craftkit` skill: `adrgen`  
 > Source: `<repository-url>` at commit `<commit-hash>`  
 > Prompt: `<exact-user-prompt>`
+```
 
 ## Template Handling Rules
 
@@ -634,6 +566,7 @@ Important claims should include evidence such as:
 README.md
 docs/REPO_MAP.md
 docs/ARCHITECTURE.md
+docs/API_SURFACE.md
 docs/OPERATIONS.md
 docs/adr/ADR_CANDIDATES.md
 docs/adr/README.md
@@ -772,6 +705,7 @@ ADRs/
 README.md
 docs/REPO_MAP.md
 docs/ARCHITECTURE.md
+docs/API_SURFACE.md
 docs/OPERATIONS.md
 docs/
 CONTRIBUTING.md
@@ -1102,9 +1036,7 @@ If the user did not explicitly allow command execution and the command might be 
 
 Instead, document the command and mark verification as unknown.
 
-If the user says `/adrgen --no-run`, do not execute test, build, install, server, docker, or deployment commands. Only inspect files.
-
-If the user says `/adrgen --dry-run`, do all analysis but do not write files. Output a summary of what would be written.
+Start with safe read-only inspection. Do not install dependencies, start servers, run Docker, execute deployments, or run heavy verification commands unless the user explicitly asks or the command is clearly safe and necessary.
 
 ## Decision Candidate Detection
 
@@ -1248,7 +1180,7 @@ When `/adrgen discover` is called, follow this process:
 21. Set `Generated ADR: none` by default.
 22. Write or update `docs/adr/ADR_CANDIDATES.md`.
 23. Update `docs/adr/README.md`.
-24. If `--write-drafts` is set, create proposed ADR drafts for high-confidence candidates.
+24. If the user explicitly asks discovery mode to also create draft ADRs, create proposed ADR drafts for high-confidence candidates.
 25. Report what was created and the most important candidates.
 
 Candidate confidence:
@@ -1998,21 +1930,6 @@ Important open questions:
 
 Suggested next step:
 - [one concrete next step]
-```
-
-If `/adrgen --dry-run` was used, do not write files.
-
-Instead report:
-
-```text
-Dry run only. No files were written.
-
-Would create/update:
-- [file]
-- [file]
-
-Would skip:
-- [candidate or reason]
 ```
 
 ## Failure Handling

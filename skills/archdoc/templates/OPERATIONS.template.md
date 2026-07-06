@@ -9,10 +9,13 @@ Source Basis: [README scan | code scan | tests run | app run locally | deploymen
 Related docs:
 - `REPO_MAP.md` — repository orientation, important files, commands, conventions, glossary.
 - `ARCHITECTURE.md` — static architecture, modules, boundaries, dependencies, data ownership.
+- `API_SURFACE.md` — detailed public and integration-relevant interfaces, schemas, auth rules, and compatibility notes.
 
 ## Purpose
 
 This document explains how the system runs, how to operate it, how to debug it, and how to make safe changes.
+
+It owns runtime and operational behavior. Do not use this document as the detailed endpoint, CLI option, event payload, schema, or compatibility reference. Put those contract details in `API_SURFACE.md`.
 
 It covers dynamic behavior:
 - local execution
@@ -271,6 +274,8 @@ Concurrency notes:
 ## One Real User Action Trace
 
 Pick one meaningful user action and trace it end to end. This is the fastest operational path for agents to understand how the system behaves.
+
+Use interface names and handlers from `API_SURFACE.md` when available, but keep the focus here on runtime behavior, verification points, and failure handling.
 
 Flow: [example: login / create project / upload file / send message / process payment / run job]
 

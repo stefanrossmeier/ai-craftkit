@@ -8,6 +8,7 @@ Source Basis: [README scan | code scan | tests run | app run locally | git histo
 
 Related docs:
 - `ARCHITECTURE.md` — static architecture, modules, boundaries, dependencies, data ownership.
+- `API_SURFACE.md` — detailed public and integration-relevant interfaces, schemas, auth rules, and compatibility notes.
 - `OPERATIONS.md` — runtime behavior, local execution, deployment, debugging, failure modes.
 
 ## Purpose
@@ -271,9 +272,10 @@ rg "[function or class name]"
 For a new agent:
 1. Read this file.
 2. Read `ARCHITECTURE.md`.
-3. Read `OPERATIONS.md`.
-4. Inspect the main entry point.
-5. Trace one real runtime flow.
+3. Read `API_SURFACE.md` when the change touches routes, commands, events, exports, or schemas.
+4. Read `OPERATIONS.md`.
+5. Inspect the main entry point.
+6. Trace one real runtime flow.
 6. Search for similar code before making changes.
 
 ## Agent Work Guide
@@ -283,11 +285,12 @@ Before changing code:
 1. Identify the relevant module from the module overview.
 2. Search for similar existing code.
 3. Read the closest tests.
-4. Trace the relevant runtime flow in `OPERATIONS.md`.
-5. Make the smallest safe change.
-6. Run the narrowest relevant test first.
-7. Run broader tests or build.
-8. Update docs if structure or behavior changed.
+4. Read `API_SURFACE.md` if the change touches public or integration-relevant behavior.
+5. Trace the relevant runtime flow in `OPERATIONS.md`.
+6. Make the smallest safe change.
+7. Run the narrowest relevant test first.
+8. Run broader tests or build.
+9. Update docs if structure or behavior changed.
 
 Rules:
 - Do not invent a new pattern until existing patterns have been searched.

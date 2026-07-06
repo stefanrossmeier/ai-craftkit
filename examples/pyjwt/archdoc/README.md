@@ -36,19 +36,18 @@ The prompt is intentionally short. It relies on the skill to define the workflow
 
 ## Generated output
 
-This folder contains the generated architecture documentation for PyJWT.
+This folder contains generated architecture documentation for PyJWT.
 
-Depending on the exact run, the output may include files such as:
+The current `archdoc` skill is designed around four primary outputs:
 
 ```text id="ru6doe"
-architecture-overview.md
-component-map.md
-repository-structure.md
-runtime-behavior.md
-evidence-and-uncertainty.md
+REPO_MAP.md
+ARCHITECTURE.md
+API_SURFACE.md
+OPERATIONS.md
 ```
 
-The exact filenames are less important than the quality of the documentation. The output should help a reader understand how PyJWT is organized and how the main parts relate to each other.
+This stored example currently predates the `API_SURFACE.md` addition and only contains the older subset of generated files. The responsibility split, however, now expects interface contract detail to live in `API_SURFACE.md` rather than being spread across the other documents.
 
 ## What the skill looks for
 

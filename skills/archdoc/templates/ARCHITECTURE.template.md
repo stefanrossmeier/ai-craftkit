@@ -8,6 +8,7 @@ Source Basis: [README scan | code scan | tests run | app run locally | deploymen
 
 Related docs:
 - `REPO_MAP.md` — repository orientation, important files, commands, conventions, glossary.
+- `API_SURFACE.md` — detailed public and integration-relevant interfaces, schemas, auth rules, and compatibility notes.
 - `OPERATIONS.md` — runtime behavior, local execution, deployment, debugging, failure modes.
 
 ## Purpose
@@ -27,6 +28,7 @@ In scope:
 Out of scope:
 - Local setup and deployment details. See `OPERATIONS.md`.
 - Detailed file-by-file repository orientation. See `REPO_MAP.md`.
+- Detailed endpoint, CLI, event, webhook, export, schema, auth, and compatibility tables. See `API_SURFACE.md`.
 - Product requirements, unless they directly explain architecture.
 
 ## Evidence Legend
@@ -157,12 +159,19 @@ Data ownership rules:
 - [Which module is read-only]
 - [Any lifecycle, retention, migration, or consistency rule]
 
-## API / Interface Map
+## Interface Ownership Summary
 
-| Interface | Route / command / event / function | Handler / entry file | Main service | Data touched | Auth / permission | Evidence | Status |
-|---|---|---|---|---|---|---|---|
-| [HTTP/API/CLI/UI/webhook/etc.] | `[route or command]` | [`path`] | [`service`] | [entities] | [rule] | [`path`] | [verified/inferred] |
-| [HTTP/API/CLI/UI/webhook/etc.] | `[route or command]` | [`path`] | [`service`] | [entities] | [rule] | [`path`] | [verified/inferred] |
+Keep this section high-level. Use it to show which modules own important interfaces and why those interfaces matter architecturally. Put detailed endpoint, CLI, event, schema, webhook, and export inventories in `API_SURFACE.md`.
+
+| Interface type | Owned by module | Main entry point | Architectural significance | Detailed contract location | Evidence | Status |
+|---|---|---|---|---|---|---|
+| [HTTP/CLI/event/library/etc.] | [module] | [`path`] | [why this boundary matters] | [`API_SURFACE.md` section or generated spec] | [`path`] | [verified/inferred] |
+| [HTTP/CLI/event/library/etc.] | [module] | [`path`] | [why this boundary matters] | [`API_SURFACE.md` section or generated spec] | [`path`] | [verified/inferred] |
+
+Interface boundary notes:
+- [Which module owns the contract and which modules consume it]
+- [Architectural consequences of interface design choices]
+- [Important interface boundary that should not be changed casually]
 
 ## Background Jobs and Async Architecture
 

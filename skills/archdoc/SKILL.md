@@ -8,15 +8,23 @@ The skill inspects the repository, fills the architecture documentation template
 
 ## Purpose
 
-`/archdoc` creates three repository documentation files:
+`/archdoc` creates four primary repository documentation files:
 
 ```text
 docs/REPO_MAP.md
 docs/ARCHITECTURE.md
+docs/API_SURFACE.md
 docs/OPERATIONS.md
 ```
 
 These documents help humans and agents understand a codebase quickly and safely.
+
+Responsibility split:
+
+- `REPO_MAP.md`: repository orientation, important files, commands, conventions, glossary, and agent navigation.
+- `ARCHITECTURE.md`: static architecture, modules, boundaries, dependencies, data ownership, and high-level interface ownership only.
+- `API_SURFACE.md`: detailed public and integration-relevant interfaces such as HTTP endpoints, CLI commands, events, queues, webhooks, exports, schemas, auth rules, and compatibility notes.
+- `OPERATIONS.md`: runtime behavior, local execution, deployment, configuration, debugging, failure modes, health checks, recovery, and operational verification.
 
 The goal is not to produce generic documentation. The goal is to create a practical repository map that helps future agents:
 
@@ -37,32 +45,31 @@ Use this skill when the user calls:
 /archdoc
 ```
 
-Optional examples:
+The skill should generate or update the documentation set directly.
 
-```text
-/archdoc
-/archdoc --scope full
-/archdoc --scope delta
-/archdoc --focus src/auth
-/archdoc --no-run
-/archdoc --dry-run
-```
-
-If no option is provided, default to:
-
-```text
-/archdoc --scope full
-```
+If the user names a specific area, document that area with enough repository context to keep the output accurate. Otherwise, inspect the repository broadly enough to produce a reliable full documentation pass.
 
 ## Required Output Files
 
-Always create or update these files:
+Treat these as the four primary outputs:
 
 ```text
 docs/REPO_MAP.md
 docs/ARCHITECTURE.md
+docs/API_SURFACE.md
 docs/OPERATIONS.md
 ```
+
+Always create or update `docs/REPO_MAP.md`, `docs/ARCHITECTURE.md`, and `docs/OPERATIONS.md`.
+
+Generate `docs/API_SURFACE.md` whenever public or integration-relevant interfaces exist or are likely. If inspection shows that the repository has no meaningful public or integration-relevant interface surface, either:
+
+- omit `docs/API_SURFACE.md`, or
+- create a short file that clearly states that no interface surface was found,
+
+depending on which choice better matches the repository’s documentation style.
+
+Report that choice explicitly in the completion report.
 
 Create the `docs/` directory if it does not exist.
 
@@ -84,8 +91,16 @@ Use this format:
 > Generated with `ai-craftkit` skill: `archdoc`  
 > Source: `<repository-url>` at commit `<commit-hash>`  
 > Prompt: `<exact-user-prompt>`
+```
 
 ## Document Responsibilities
+
+Keep the document responsibilities separate.
+
+- Do not let `ARCHITECTURE.md` duplicate detailed interface documentation.
+- Do not let `OPERATIONS.md` duplicate endpoint, schema, event payload, CLI option, or compatibility inventories.
+- `ARCHITECTURE.md` may summarize interface ownership and link to `API_SURFACE.md`.
+- `OPERATIONS.md` may reference `API_SURFACE.md` when runtime behavior depends on an interface, but it should stay focused on how the system runs, fails, and is verified.
 
 ### `docs/REPO_MAP.md`
 
@@ -99,6 +114,8 @@ What commands, conventions, vocabulary, and risks should an agent know?
 ```
 
 Include only sections that are supported by repository evidence.
+
+This document owns the static structure of the system. It may summarize major interface types and interface-owning modules, but it should not become the detailed endpoint, command, event, schema, or export reference.
 
 Typical content:
 
@@ -149,7 +166,10 @@ Typical content:
 - static module map
 - internal dependency map
 - data model and ownership
-- API / interface map
+- main interface types
+- owning modules
+- architectural boundaries
+- links to `API_SURFACE.md`
 - background jobs and async architecture
 - data flow overview
 - external dependencies
@@ -164,6 +184,49 @@ Typical content:
 - verified / inferred claim register
 - known unknowns
 
+### `docs/API_SURFACE.md`
+
+Answers:
+
+```text
+Which public or integration-relevant interfaces exist?
+Where are they implemented?
+What inputs, outputs, auth rules, schemas, errors, and compatibility constraints matter?
+What should future agents verify before changing an interface?
+```
+
+Include only sections that are supported by repository evidence.
+
+This document owns detailed interface and contract documentation.
+
+Typical content:
+
+- purpose
+- scope
+- evidence legend
+- API surface summary
+- interface inventory
+- HTTP API
+- GraphQL API
+- RPC / gRPC / protobuf contracts
+- CLI surface
+- events, queues, and messages
+- webhooks and inbound integrations
+- public library / module exports
+- file import / export formats
+- input and output schemas
+- authentication and authorization
+- error and response conventions
+- versioning, compatibility, and deprecation
+- examples and smoke checks
+- tests and contract confidence
+- API surface diagrams
+- high-risk interface changes
+- change impact notes
+- verified / inferred claim register
+- known unknowns
+- agent work guide
+
 ### `docs/OPERATIONS.md`
 
 Answers:
@@ -175,6 +238,8 @@ What happens dynamically at runtime?
 ```
 
 Include only sections that are supported by repository evidence.
+
+This document owns runtime and operational behavior. It may reference interface entry points, health checks, ports, or runtime dependencies, but detailed interface contracts belong in `API_SURFACE.md`.
 
 Typical content:
 
@@ -212,6 +277,7 @@ Use the existing templates as the conceptual source:
 
 ```text
 ARCHITECTURE.template.md
+API_SURFACE.template.md
 OPERATIONS.template.md
 REPO_MAP.template.md
 ```
@@ -228,6 +294,7 @@ Before writing the final files:
 6. Delete unresolved bracket placeholders such as `[path]`, `[command]`, `[status]`.
 7. Keep useful “unknown” sections only when the missing information matters.
 8. Prefer concise concrete documentation over long generic boilerplate.
+9. Keep detailed interface inventories in `API_SURFACE.md`, not in `ARCHITECTURE.md` or `OPERATIONS.md`.
 
 Never leave content like this in final documents:
 
@@ -386,6 +453,7 @@ Look for:
 ```text
 README.md
 docs/
+docs/API_SURFACE.md
 CONTRIBUTING.md
 DEVELOPMENT.md
 DEPLOYMENT.md
@@ -402,6 +470,7 @@ Extract:
 - deploy instructions
 - known caveats
 - architecture notes
+- interface notes
 - project conventions
 
 Also compare README claims against repository reality.
@@ -475,9 +544,11 @@ Extract:
 
 - main modules
 - module responsibilities
+- public exports and interface-owning modules
 - data providers
 - integration adapters
 - routes and commands
+- schemas and contract definitions
 - background jobs
 - persistence layer
 - validation points
@@ -627,9 +698,7 @@ docker build
 
 If the user did not explicitly allow command execution and the command might be slow, networked, destructive, or state-changing, do not run it automatically. Instead, document the command and mark verification as unknown.
 
-If the user says `/archdoc --no-run`, do not execute test, build, install, server, docker, or deployment commands. Only inspect files.
-
-If the user says `/archdoc --dry-run`, do all analysis but do not write files. Output a summary of what would be written.
+Start with safe read-only inspection. Do not install dependencies, start servers, run Docker, execute deployments, or run heavy verification commands unless the user explicitly asks or the command is clearly safe and necessary.
 
 ## Writing Process
 
@@ -643,16 +712,20 @@ When generating the docs, follow this process:
 6. Inspect tests.
 7. Inspect config and deployment files.
 8. Inspect source modules.
-9. Identify at least one real runtime flow if possible.
-10. Identify external dependencies.
-11. Identify high-risk areas.
-12. Identify conventions and search hints.
-13. Generate the three docs.
-14. Remove unused template sections.
-15. Remove placeholders.
-16. Add known unknowns where useful.
-17. Write files to `docs/`.
-18. Report what was created and the most important gaps.
+9. Identify public and integration-relevant interfaces.
+10. Identify at least one real runtime flow if possible.
+11. Identify external dependencies.
+12. Identify high-risk areas.
+13. Identify conventions and search hints.
+14. Generate `REPO_MAP.md`.
+15. Generate `ARCHITECTURE.md`.
+16. Generate `API_SURFACE.md` when interfaces exist or are likely; otherwise omit it or create a clear no-surface summary.
+17. Generate `OPERATIONS.md`.
+18. Remove unused template sections.
+19. Remove placeholders.
+20. Add known unknowns where useful.
+21. Write files to `docs/`.
+22. Report what was created and the most important gaps.
 
 ## Final Document Quality Rules
 
@@ -667,6 +740,7 @@ Final docs must be:
 - free of copied secret values
 - clear about uncertainty
 - organized for quick onboarding
+- clear about document ownership so architecture, interface, and operations content do not drift into each other
 
 Prefer tables for maps and inventories.
 
@@ -679,6 +753,8 @@ Do not create large speculative diagrams.
 Do not include every file in the repository. Focus on files and folders that help understand or operate the system.
 
 Do not document generated or vendored files in detail.
+
+Do not duplicate detailed endpoint, CLI, event, export, schema, auth, or compatibility tables across multiple documents. Put those details in `API_SURFACE.md` and keep the other docs at the correct level.
 
 ## Diagrams
 
@@ -890,7 +966,7 @@ Use these fields at the top of each generated file:
 ```md
 Last Reviewed Scope: [full review | delta update | targeted area]
 Doc Status: [MAINTAINED | DRAFT | NEEDS REVIEW]
-Last [Repo Map/Architecture/Operations] Update: [YYYY-MM-DDTHH:MM:SSZ]
+Last [Repo Map/Architecture/API Surface/Operations] Update: [YYYY-MM-DDTHH:MM:SSZ]
 Updated By: [human | agent | human+agent]
 Source Basis: [README scan | code scan | tests run | app run locally | deployment files | other]
 ```
@@ -911,6 +987,7 @@ After writing the files, respond with a concise report:
 Created/updated:
 - docs/REPO_MAP.md
 - docs/ARCHITECTURE.md
+- docs/API_SURFACE.md  [when generated]
 - docs/OPERATIONS.md
 
 Most important findings:
@@ -924,17 +1001,6 @@ Important gaps:
 
 Suggested next step:
 - [one concrete next step]
-```
-
-If `/archdoc --dry-run` was used, do not write files. Instead report:
-
-```text
-Dry run only. No files were written.
-
-Would create/update:
-- docs/REPO_MAP.md
-- docs/ARCHITECTURE.md
-- docs/OPERATIONS.md
 ```
 
 ## Failure Handling
@@ -958,6 +1024,12 @@ If templates are missing:
 - Continue using the expected document structure described in this skill.
 - Do not fail solely because template files are not present.
 - Mention that the templates were not found.
+
+If no public or integration-relevant interface surface is found:
+
+- Do not invent one.
+- Either omit `docs/API_SURFACE.md` or create a short file that explicitly says no interface surface was found.
+- Mention the choice in the completion report.
 
 If files cannot be written:
 

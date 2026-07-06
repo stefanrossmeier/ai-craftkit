@@ -61,17 +61,16 @@ Humans still own the final interpretation and approval.
 
 `archdoc` guides an AI assistant through repository inspection and architecture documentation.
 
-It is useful when you want to understand how a codebase is structured, where the main components are, and how the system appears to work.
+It is useful when you want to understand how a codebase is structured, where the main components are, what interfaces matter, and how the system appears to work.
 
 Typical outputs include:
 
-* architecture overview
-* component map
-* repository structure summary
-* runtime or deployment observations
-* data flow notes
-* dependency observations
-* uncertainty and missing information
+* `docs/REPO_MAP.md`
+* `docs/ARCHITECTURE.md`
+* `docs/API_SURFACE.md`
+* `docs/OPERATIONS.md`
+
+`API_SURFACE.md` owns detailed public and integration-relevant contracts. `ARCHITECTURE.md` summarizes interface ownership at a high level, and `OPERATIONS.md` focuses on runtime behavior rather than contract inventories.
 
 Use `archdoc` when:
 

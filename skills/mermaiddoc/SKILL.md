@@ -84,20 +84,16 @@ Use this skill when the user calls:
 /mermaiddoc
 ```
 
-Supported examples:
+Natural examples:
 
 ```text
-/mermaiddoc flow "Show how a request moves through the API"
-/mermaiddoc sequence "Show how the CLI command calls the skill"
 /mermaiddoc "Create a diagram for the authentication flow"
-/mermaiddoc --focus src/auth
-/mermaiddoc --type flowchart
-/mermaiddoc --type sequence
-/mermaiddoc --dry-run
-/mermaiddoc --no-run
+/mermaiddoc "Show the request lifecycle"
+/mermaiddoc "Create a sequence diagram for startup and data processing"
+/mermaiddoc "Show the main components of the application"
 ```
 
-If no type is provided:
+Choose the diagram type from the request and repository evidence:
 
 1. Use `sequenceDiagram` when the user describes steps over time, calls, messages, requests, responses, retries, or interactions.
 2. Use `flowchart LR` when the user describes structure, modules, dependencies, ownership, states, or process flow.
@@ -187,6 +183,7 @@ Inspect existing documentation first when present:
 README.md
 docs/REPO_MAP.md
 docs/ARCHITECTURE.md
+docs/API_SURFACE.md
 docs/OPERATIONS.md
 docs/adr/
 docs/
@@ -248,6 +245,7 @@ Use this format:
 > Generated with `ai-craftkit` skill: `mermaiddoc`  
 > Source: `<repository-url>` at commit `<commit-hash>`  
 > Prompt: `<exact-user-prompt>`
+```
 
 ## Diagram Design Rules
 
@@ -949,42 +947,7 @@ Before writing a diagram file, check:
 - Are secrets excluded?
 - Would a future agent understand what this diagram is for?
 
-## Dry Run Mode
-
-If the user uses:
-
-```text
-/mermaiddoc --dry-run
-```
-
-Do not write files.
-
-Instead report:
-
-```text
-Dry run only. No files were written.
-
-Would create/update:
-- docs/diagrams/[file].md
-
-Diagram type:
-- [flowchart LR | sequenceDiagram]
-
-Diagram preview:
-[short Mermaid diagram]
-```
-
-## No Run Mode
-
-If the user uses:
-
-```text
-/mermaiddoc --no-run
-```
-
-Do not execute commands that run builds, tests, installs, servers, Docker, or network calls.
-
-File inspection is allowed.
+Start with safe read-only inspection. Do not install dependencies, start servers, run Docker, execute deployments, or run heavy verification commands unless the user explicitly asks or the command is clearly safe and necessary.
 
 ## Completion Report
 

@@ -83,10 +83,28 @@ Examples:
 
 ```text
 /mermaiddoc "Show the request lifecycle"
-/mermaiddoc flow "Show the main modules"
-/mermaiddoc sequence "Show how the CLI command calls the skill"
-/mermaiddoc --focus src/auth
+/mermaiddoc "Create a sequence diagram for startup and data processing"
+/mermaiddoc "Show the main components of the application"
 ```
+
+The skill chooses `flowchart LR` or `sequenceDiagram` from the request and the repository evidence. It should prefer the smallest useful diagram over a broad diagram that is hard to read.
+
+## Recommended Workflow
+
+1. Start with safe read-only inspection when the diagram should reflect the repository.
+2. Inspect existing docs and the relevant source area.
+3. Choose one focused diagram purpose.
+4. Write a Markdown file under `docs/diagrams/` with a GitHub-renderable Mermaid block.
+5. Note important assumptions, omissions, or gaps.
+
+## Safety and Evidence
+
+`mermaiddoc` should:
+
+* start with safe read-only inspection
+* avoid secrets and never copy secret values
+* avoid expensive or state-changing commands unless explicitly asked or clearly necessary
+* keep diagrams grounded in repository evidence when the user asks for repository-based documentation
 
 ## Design Principle
 
