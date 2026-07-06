@@ -2,52 +2,62 @@
 
 This folder contains example architecture documentation generated for the public `pyjwt` repository using the `archdoc` skill from `ai-craftkit`.
 
-The purpose of this example is to show how the skill can inspect an existing repository and produce structured architecture documentation that is grounded in visible repository evidence.
+The example is meant to show the current output shape of the skill: evidence-based repository documentation split across repository map, architecture, interface surface, and operations documents.
 
 ## Source repository
 
 The documentation in this folder is based on the public PyJWT repository:
 
-```text id="7p2im5"
+```text
 https://github.com/jpadilla/pyjwt
 ```
 
-PyJWT is a Python library for working with JSON Web Tokens. It provides useful architecture documentation targets because it has a focused domain, a small codebase, clear module boundaries, tests, documentation, packaging configuration, and security-relevant behavior.
+PyJWT is a useful example target because it is a focused Python library with clear module boundaries, public APIs, tests, packaging metadata, documentation, and security-relevant behavior.
 
 ## Skill used
 
 This example uses:
 
-```text id="re5ktk"
+```text
 skills/archdoc/SKILL.md
 ```
 
-The `archdoc` skill is designed to inspect a repository and generate architecture documentation with a strong preference for evidence, uncertainty handling, and reviewable output.
-
-## Prompt used
-
-The prompt used for this example was:
-
-```text id="slgrgn"
-/archdoc generate the documentation docs for the pyjwt repository here in this workspace
-```
-
-The prompt is intentionally short. It relies on the skill to define the workflow: inspect the repository, identify relevant architectural structure, and create documentation that can be reviewed by a developer.
+The `archdoc` skill inspects a repository and generates architecture documentation with a strong preference for concrete evidence, explicit uncertainty handling, and practical guidance for future agents and maintainers.
 
 ## Generated output
 
-This folder contains generated architecture documentation for PyJWT.
+This folder currently contains the full four-document output set expected by the current version of the skill:
 
-The current `archdoc` skill is designed around four primary outputs:
-
-```text id="ru6doe"
+```text
 REPO_MAP.md
 ARCHITECTURE.md
 API_SURFACE.md
 OPERATIONS.md
 ```
 
-This stored example currently predates the `API_SURFACE.md` addition and only contains the older subset of generated files. The responsibility split, however, now expects interface contract detail to live in `API_SURFACE.md` rather than being spread across the other documents.
+The responsibility split is:
+
+* `REPO_MAP.md`: repository orientation, important files, commands, conventions, and agent navigation
+* `ARCHITECTURE.md`: static structure, modules, boundaries, dependencies, and data ownership
+* `API_SURFACE.md`: public and integration-relevant interfaces, including Python imports and JWKS-related integration points
+* `OPERATIONS.md`: local execution, verification, packaging, publishing, debugging, and runtime behavior
+
+## What this checked-in example reflects
+
+The generated documents in this folder reflect the current skill conventions rather than an older format. In particular, they now include:
+
+* a lightweight provenance block near the top of each file
+* status fields such as review scope, doc status, update timestamp, updater, and source basis
+* a separate `API_SURFACE.md` document for contract and interface detail
+* explicit handling of verified, inferred, and missing information where useful
+
+The checked-in PyJWT docs are intentionally marked as a draft-quality architecture pass rather than official project documentation.
+
+## Prompt and provenance
+
+The exact prompt used for the checked-in example is recorded inside the generated documents themselves in the provenance block at the top of each file.
+
+That is the current source of truth for the example run, because the skill now requires generated documents to preserve directly available provenance rather than reconstruct it later in the example README.
 
 ## What the skill looks for
 
@@ -57,14 +67,14 @@ When run against a repository like PyJWT, `archdoc` may inspect evidence such as
 * public API entry points
 * internal module boundaries
 * tests
-* documentation
+* existing documentation
 * packaging configuration
 * dependency declarations
+* runtime and CI workflow files
 * error and exception handling
 * algorithm support
 * validation behavior
-* JWKS-related code
-* project scripts and tooling configuration
+* JWK and JWKS-related code
 
 The skill should avoid inventing architectural intent that is not visible in the repository.
 
@@ -79,9 +89,9 @@ Good architecture documentation for this example should make clear:
 * how exceptions are organized
 * how JWKS support fits into the library
 * how tests and documentation support the implementation
-* which findings are verified and which are inferred
+* which findings are verified, inferred, or still missing
 
-The output should be specific to PyJWT. Generic statements about “modular architecture” or “clean separation of concerns” are only useful when backed by repository evidence.
+The output should be specific to PyJWT. Generic statements about modularity or separation of concerns are only useful when backed by repository evidence.
 
 ## How to review the output
 
@@ -89,10 +99,9 @@ Review the generated documentation with these questions:
 
 * Does it describe PyJWT specifically?
 * Does it separate verified facts from inferred conclusions?
-* Are uncertain findings clearly marked?
-* Are important modules and flows covered?
-* Are claims supported by repository structure or code behavior?
-* Is the documentation useful for onboarding?
+* Are important modules, flows, and integration points covered?
+* Are claims supported by repository structure, code behavior, or configuration?
+* Is the split between repo map, architecture, API surface, and operations actually useful?
 * Would a maintainer recognize the system from this description?
 * Is anything overstated?
 
@@ -100,7 +109,7 @@ A good `archdoc` result should feel like a careful repository walkthrough, not a
 
 ## Expected value
 
-This example demonstrates how `archdoc` can create a first architecture documentation draft from an existing codebase.
+This example demonstrates how `archdoc` can create a first documentation pass for an existing codebase.
 
 The result can help with:
 
@@ -117,22 +126,18 @@ The generated documentation should still be reviewed by a human before being tre
 
 This output should not be read as official PyJWT documentation.
 
-It is an external documentation exercise based on repository inspection. Some findings may be inferred from code structure and naming. The skill should make those cases visible instead of presenting them as confirmed project intent.
+It is an external documentation exercise based on repository inspection. Some findings may be inferred from code structure, naming, or documentation gaps. The skill should make those cases visible instead of presenting them as confirmed project intent.
 
 ## Suggested workflow
 
-A useful workflow for this example is:
-
-1. Run `archdoc` against the PyJWT repository.
-2. Store the generated documentation in this folder.
-3. Review the output against the source code.
-4. Remove generic or unsupported claims.
-5. Keep useful architecture explanations.
+1. Run `archdoc` against the target repository.
+2. Store the generated documents in this example folder.
+3. Review the output against the source code and existing project docs.
+4. Remove unsupported claims and tighten weak sections.
+5. Keep useful architecture explanations and repository-specific guidance.
 6. Use `mermaiddoc` for diagrams of selected flows.
 7. Use `adrgen` to discover architectural decision candidates.
 
 ## Notes
 
-The short prompt is intentional.
-
-It demonstrates that the skill contains the documentation workflow. The user does not need to write a detailed architecture prompt to get structured repository documentation.
+This example is useful partly because PyJWT is not a web service. It shows that `archdoc` should adapt to a library-shaped repository and document the real integration surface instead of inventing endpoints, infrastructure, or runtime components that are not present.

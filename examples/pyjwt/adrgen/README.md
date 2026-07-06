@@ -1,108 +1,136 @@
 # PyJWT ADR discovery example
 
-This folder contains example output generated for the public `pyjwt` repository using the `adrgen` skill from `ai-craftkit`.
+This folder contains example ADR discovery output generated for the public `pyjwt` repository using the `adrgen` skill from `ai-craftkit`.
 
-The purpose of this example is to show how the skill can inspect an existing codebase and identify architectural decision candidates that may be worth documenting as ADRs.
+The example is meant to show the current output shape of the skill in `discover` mode: a reviewable ADR index plus an `ADR_CANDIDATES.md` funnel that captures evidence-backed decision candidates before any final ADRs are generated.
 
 ## Source repository
 
 The documentation in this folder is based on the public PyJWT repository:
 
-```text id="htc686"
+```text
 https://github.com/jpadilla/pyjwt
 ```
 
-PyJWT is a Python library for working with JSON Web Tokens. It contains visible architectural choices around public API design, JWT and JWS separation, algorithm handling, validation behavior, exceptions, packaging, testing, and JWKS support.
+PyJWT is a useful example target because it is a focused Python library with clear public APIs, explicit JWT and JWS layering, optional cryptography support, JWK and JWKS handling, tests, packaging metadata, and security-relevant validation behavior.
 
 ## Skill used
 
 This example uses:
 
-```text id="s6ynts"
+```text
 skills/adrgen/SKILL.md
 ```
 
-The `adrgen` skill is designed to discover architectural decisions from repository evidence and prepare reviewable decision candidates.
+The current `adrgen` skill supports four modes:
 
-## Prompt used
-
-The prompt used for this example was intentionally short:
-
-```text id="mlt4tw"
-/adrgen discover the repo pyjwt
+```text
+/adrgen discover
+/adrgen generate
+/adrgen capture
+/adrgen prepare
 ```
 
-This prompt asks the skill to inspect the repository and discover decisions instead of generating ADRs from a predefined list.
+This checked-in example specifically demonstrates `discover` mode.
 
-## Generated file
+## Generated output
 
-This run produced a single discovery file:
+The live skill writes discover-mode output to the target repository's `docs/adr/` directory.
 
-```text id="3x5lxh"
-ADR_CANDIDATES.md
+For this checked-in example, that generated output is stored locally under:
+
+```text
+adr/README.md
+adr/ADR_CANDIDATES.md
 ```
 
-The file contains a list of architectural decision candidates discovered from the PyJWT repository.
+The responsibility split is:
 
-It should be treated as **discovery output**, not as accepted project history. The candidates may describe visible design choices, but they still require human review before being turned into formal ADRs.
+* `adr/README.md`: ADR index for the run, including status legend, candidate document listing, and agent guidance
+* `adr/ADR_CANDIDATES.md`: reviewable list of discovered decision candidates, evidence tables, open questions, and suggested next steps
+
+At the moment, this example contains discovery output only. It does not include generated ADR drafts or accepted ADRs.
+
+## What this checked-in example reflects
+
+The generated files in `adr/` reflect the current skill conventions rather than an older single-file format. In particular, they now include:
+
+* a lightweight provenance block near the top of each generated document
+* update metadata such as review scope, doc status, timestamp, updater, and source basis
+* an ADR index file in addition to `ADR_CANDIDATES.md`
+* candidate summary and per-candidate review fields such as `Candidate Status`, `Generate ADR`, `Suggested ADR`, and `Generated ADR`
+* explicit handling of `verified`, `inferred`, and `missing` evidence states where useful
+
+The checked-in PyJWT docs are intentionally a discovery pass, not official project documentation.
+
+## Prompt and provenance
+
+The exact prompt used for the checked-in example is recorded inside the generated files themselves in the provenance block at the top of `adr/README.md` and `adr/ADR_CANDIDATES.md`.
+
+That is the current source of truth for the example run, because the skill now requires generated ADR-related documents to preserve directly available provenance instead of reconstructing it later in this README.
 
 ## What the skill looks for
 
-When run against a repository like PyJWT, `adrgen` may identify decision candidates from evidence such as:
+When run against a repository like PyJWT, `adrgen discover` may identify candidate decisions from evidence such as:
 
 * public API structure
-* module boundaries
-* dependency choices
-* packaging configuration
-* test structure
-* error handling patterns
-* supported algorithms
-* validation behavior
-* documentation conventions
+* module boundaries and layering
+* dependency and packaging choices
+* key handling and algorithm support
+* validation defaults and strictness options
+* JWK and JWKS integration behavior
 * security-relevant implementation choices
+* tests and documentation that reinforce architectural boundaries
 
-The skill should prefer repository evidence over assumptions. If the repository does not prove that a decision was formally accepted, the output should mark it as a candidate or discovered decision rather than an accepted ADR.
+The current PyJWT example surfaces candidates around:
 
-## How to review `ADR_CANDIDATES.md`
+* separation of JWS processing from JWT claim validation
+* optional `cryptography` support via `pyjwt[crypto]`
+* explicit decode-time algorithm allow-lists and key-family safety checks
+* first-class JWK and JWKS abstractions
+* conservative built-in JWKS client behavior
+* extension seams for custom algorithms and payload handling
+* standards-driven claim validation with opt-out controls
 
-Review each candidate with these questions:
+The skill should prefer repository evidence over assumptions. If the repository does not prove that a decision was formally accepted, the output should remain a candidate and should not be presented as accepted history.
 
-* Is the decision actually visible in the repository?
-* Does the candidate describe enough evidence?
-* Is the status justified?
-* Is the context specific to PyJWT?
-* Are consequences concrete?
-* Are assumptions clearly marked?
-* Would this help a future maintainer?
-* Is this useful documentation, or only a restatement of code?
+## How to review the output
 
-A good candidate should explain why a design choice matters, not only that the choice exists.
+Review the generated candidate set with these questions:
+
+* Does each candidate describe a real architectural choice rather than a local implementation detail?
+* Is the evidence concrete and specific to PyJWT?
+* Are important claims marked as verified, inferred, or missing appropriately?
+* Are the consequences and trade-offs useful to a future maintainer or agent?
+* Do the suggested ADR filenames and next steps make sense?
+* Is anything overstated as accepted when it should still be treated as a review candidate?
+
+A good `adrgen discover` result should help a human decide which choices deserve formal ADRs, not just restate the codebase in prose.
 
 ## Expected value
 
-This example demonstrates how `adrgen` can help with a common documentation problem: important architectural decisions often exist in code long before they exist in documentation.
+This example demonstrates how `adrgen` can help with a common documentation problem: important architectural decisions often exist in code long before they exist in decision records.
 
-The skill can help create a first inventory of those decisions. A human reviewer still needs to decide which candidates should become accepted ADRs, which should remain open questions, and which should be discarded.
+The discovery pass creates a review funnel first. A human reviewer can then decide which candidates should become formal ADR drafts, which should remain open questions, and which should be rejected or merged.
 
 ## Limitations
 
 This output should not be read as official PyJWT documentation.
 
-It is an external documentation exercise created from repository inspection. Some decisions may be inferred from code structure rather than confirmed by maintainers. Those cases should remain clearly marked as inferred or candidate decisions.
+It is an external documentation exercise based on repository inspection. Some rationale is necessarily inferred from code, tests, and docs rather than confirmed by project maintainers. The skill should make those cases visible instead of presenting them as settled project history.
 
 ## Suggested workflow
 
-A useful workflow for this example is:
-
-1. Run `adrgen` against the PyJWT repository.
-2. Store the generated `ADR_CANDIDATES.md` file in this folder.
-3. Review each candidate against the source code.
-4. Keep strong candidates as documentation or convert them into formal ADR files.
-5. Mark weak or speculative candidates as open questions.
-6. Use `archdoc` or `mermaiddoc` to add supporting architecture context where helpful.
+1. Run `adrgen discover` against the target repository.
+2. Store the generated `docs/adr/` output in this example folder.
+3. Review `adr/ADR_CANDIDATES.md` against the source code and existing project docs.
+4. Mark strong candidates with `Candidate Status: ready` or `approved` and `Generate ADR: yes`.
+5. Run `adrgen generate` to turn selected candidates into ADR drafts.
+6. Review the generated ADRs before changing any `Decision Status` to `ACCEPTED`.
+7. Use `archdoc` or `mermaiddoc` to add supporting architecture context where helpful.
 
 ## Notes
 
-The short prompt is intentional.
+This example is intentionally useful even though PyJWT is a library rather than a service.
 
-It demonstrates that the skill carries the workflow guidance. The user does not need to write a long prompt to get structured ADR discovery behavior.
+It shows that `adrgen` should adapt to a library-shaped repository, focus on real design decisions such as security boundaries and API layering, and produce a reviewable ADR candidate funnel instead of inventing operational architecture that is not present.

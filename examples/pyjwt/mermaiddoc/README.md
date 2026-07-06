@@ -29,29 +29,36 @@ The `mermaiddoc` skill focuses on practical Mermaid diagrams that are readable, 
 The prompt used for this example was intentionally short:
 
 ```text
-/mermaiddoc on the pyjwt repository, create me a md file and explanation for decode. And another md file for explanation of validation.
+/mermaiddoc In the pyjwt repo describe the encode workflow with a new md file. Also describe the decode workflow with a separate md file.
 ```
 
 This was enough for the skill to identify two useful documentation targets:
 
-1. the JWT decode flow
-2. the validation flow after payload decoding
+1. the JWT encode workflow
+2. the JWT decode workflow
 
 ## Generated files
 
 This folder contains documentation for:
 
-| File            | Purpose                                                                       |
-| --------------- | ----------------------------------------------------------------------------- |
-| `decode.md`     | Explains the main PyJWT decode flow and includes a Mermaid diagram.           |
-| `validation.md` | Explains how decoded JWT claims are validated and includes a Mermaid diagram. |
+| File                              | Purpose                                                        |
+| --------------------------------- | -------------------------------------------------------------- |
+| `diagrams/jwt-encode-workflow.md` | Explains how `jwt.encode()` builds and signs a compact JWT.    |
+| `diagrams/jwt-decode-workflow.md` | Explains how `jwt.decode()` verifies, parses, and validates a token. |
+
+Both generated files include:
+
+* a provenance block with repository URL, commit hash, and exact prompt
+* a focused Mermaid diagram that renders in GitHub
+* a short source basis section listing inspected files
+* concise notes that distinguish verified behavior from omitted detail
 
 ## Why this example exists
 
 The example demonstrates a practical use case for AI-assisted documentation:
 
 * take an existing repository
-* ask for documentation around one focused behavior
+* ask for documentation around one focused workflow
 * generate Markdown that developers can review
 * include diagrams that explain control flow
 * keep the result small enough to maintain
@@ -65,14 +72,16 @@ When reviewing the generated files, pay attention to whether the documentation i
 * specific to PyJWT
 * focused on one behavior per file
 * readable without knowing the entire repository
-* clear about the sequence of calls
+* clear about the control flow from public API to internal implementation
 * supported by the actual code structure
 * simple enough to maintain
 
-The diagrams should explain the flow. They should not try to model every implementation detail or exception branch.
+The diagrams should explain the main encode and decode paths. They should not try to model every implementation detail or exception branch.
 
 ## Notes
 
 This example is intentionally small.
 
-It shows how `mermaiddoc` can be used as part of a repository documentation workflow without requiring a long prompt or a large setup. A more complete documentation run could combine this with the `archdoc` skill for architecture overview and the `adrgen` skill for architectural decision candidates.
+It shows how `mermaiddoc` can be used as part of a repository documentation workflow without requiring a long prompt or a large setup. The current example focuses on two adjacent public APIs so the output stays easy to verify against the repository.
+
+A more complete documentation run could add separate diagrams for claim validation, algorithm selection, or JWKS-based key lookup, or combine this with the `archdoc` skill for higher-level repository structure.

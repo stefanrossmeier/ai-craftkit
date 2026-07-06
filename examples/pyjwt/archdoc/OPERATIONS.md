@@ -1,190 +1,214 @@
+# PyJWT Operations
+
+> Generated with `ai-craftkit` skill: `archdoc`  
+> Source: `https://github.com/jpadilla/pyjwt.git` at commit `7144e4534c34810f4525dc4578a32addd8212cff`  
+> Prompt: `Follow instructions in #prompt:SKILL.md with these arguments: generate the architecture documentation for the pyjwt repo.`
+
 Last Reviewed Scope: full review
 Doc Status: DRAFT
-Last Operations Update: 2026-07-06T14:44:06Z
+Last Operations Update: 2026-07-06T21:43:59Z
 Updated By: agent
-Source Basis: README scan; pyproject scan; tests scan; workflow scan; docs scan
-
-# Operations
+Source Basis: README scan | docs scan | code scan | test scan | workflow scan
 
 ## Purpose
 
-This document describes how PyJWT is developed, validated, documented, packaged, and published. Because PyJWT is a library repository, the operational model is mostly about local development, test execution, docs generation, and release automation rather than service deployment.
+This document describes how PyJWT is installed, verified, released, and operated as a library dependency.
+
+PyJWT is not a long-running service. Most operational work is local verification, docs generation, package build / publish, and support for downstream integrations that use the library at runtime.
 
 ## Runtime Overview
 
-- Normal runtime is import-and-call inside another Python process.
-- There is no server entry point, background worker, container image, or persistent datastore in the repo.
-- The only built-in network interaction is optional JWKS retrieval via `PyJWKClient`.
-- Release and documentation operations are performed by GitHub Actions and Read the Docs.
+| Runtime concern | Behavior |
+|---|---|
+| Execution model | In-process Python library calls |
+| Long-running processes | None in this repo |
+| Persistence | None; only ephemeral in-memory state |
+| Network access | Only when callers use `PyJWKClient` to fetch a JWKS over HTTP(S) |
+| Background work | None |
 
 ## Local Development Quick Start
 
-1. Install the package for the mode you need:
-   - `python -m pip install .`
-   - `python -m pip install .[crypto]`
-   - `python -m pip install -e . --group dev`
-2. Run focused validation:
-   - `python -m pytest`
-   - `tox -e docs`
-   - `pre-commit run --all-files`
-3. Run the full maintainer surface with `tox` when touching multiple areas.
+| Goal | Command | Evidence |
+|---|---|---|
+| Install base package | `python -m pip install .` | `.github/workflows/main.yml` |
+| Install crypto-enabled package | `python -m pip install .[crypto]` | `docs/installation.rst`, workflow |
+| Install editable dev environment | `python -m pip install -e . --group dev` | `.github/workflows/main.yml` |
+| Run full validation | `tox` | `README.rst`, `tox.ini` |
+| Build docs and doctests | `tox -e docs` | `tox.ini` |
 
 ## Command Map
 
-| Command | Purpose | Evidence |
-|---|---|---|
-| `tox` | Full validation matrix entry point | `README.rst`, `tox.ini` |
-| `python -m pytest` | Run the test suite directly | `pyproject.toml` |
-| `tox -e lint` | Run pre-commit-based lint and formatting checks | `tox.ini` |
-| `tox -e docs` | Build HTML docs, run doctests, and test README examples | `tox.ini` |
-| `tox -e pypi-description` | Build a wheel and validate long description metadata | `tox.ini` |
-| `python -m build` | Build distribution artifacts | `.github/workflows/main.yml` |
-| `python -m twine check dist/*` | Validate package metadata rendering | `.github/workflows/main.yml` |
+| Command | What it does |
+|---|---|
+| `tox` | Runs the configured tox environment matrix |
+| `python -m tox -e lint` | Runs `pre-commit run --all-files` |
+| `python -m tox -e py311-crypto` | Runs one crypto-enabled test environment |
+| `python -m tox -e py311-nocrypto` | Runs one base-install test environment |
+| `python -m tox -e py311-mypy` | Runs strict mypy checks |
+| `tox -e docs` | Builds HTML docs, doctests docs, and doctests `README.rst` / `docs/usage.rst` |
+| `python -m build` | Builds source and wheel artifacts |
+| `python -m jwt.help` | Prints environment metadata helpful in bug reports |
 
 ## Execution Model
 
-PyJWT executes synchronously inside the caller's process.
+The main runtime paths are synchronous function or method calls from a host application. There is no project-managed process supervisor, port binding, queue worker, or scheduler.
 
-- Encode/decode calls are pure request-response library operations.
-- Claim validation uses current UTC time at decode time.
-- Optional JWKS retrieval performs blocking HTTP requests through `urllib.request`.
-- JWKS caching is in-memory only and process-local.
-- There is no built-in job queue, retry worker, or scheduler.
+The only persistent behavior inside the library is cache retention within a `PyJWKClient` instance:
+
+- a TTL cache for entire JWKS responses, enabled by default
+- an optional LRU cache for individual signing keys
 
 ## Runtime Modes
 
-| Mode | What changes |
-|---|---|
-| Base install | Supports `none` and HMAC algorithms; no `cryptography` dependency |
-| `.[crypto]` install | Enables RSA, EC, PSS, and EdDSA algorithms |
-| Docs build | Sphinx imports the package with `SPHINX_BUILD=1` behavior in `docs/conf.py` |
-| CI matrix | Runs across CPython 3.9-3.14 and PyPy 3.9-3.11 on Ubuntu and Windows |
+| Mode | Difference | Evidence |
+|---|---|---|
+| Base install | HMAC and `none` algorithms available; no `cryptography` dependency | `pyproject.toml`, `jwt/algorithms.py` |
+| Crypto install (`.[crypto]`) | RSA, ECDSA, RSA-PSS, and EdDSA algorithms become available | `docs/installation.rst`, `jwt/algorithms.py` |
+| Docs build mode | Sphinx build imports extra typing paths and runs doctests | `.readthedocs.yaml`, `tox.ini`, `SPHINX_BUILD` checks |
 
 ## Environment And Secrets
 
-- Normal package use does not require environment variables.
-- `docs/conf.py` sets `SPHINX_BUILD=1` during documentation generation to expose type aliases for autodoc.
-- GitHub Actions use `CODECOV_TOKEN` for coverage upload in CI.
-- PyPI publishing is configured through GitHub trusted publishing (`id-token: write`) rather than a plaintext repository secret in the workflow files.
+No required repository-managed `.env` or secret files were found.
 
-## Deployment And Publication
+Operationally relevant sensitive inputs are provided by downstream callers, not stored here:
 
-| Surface | Mechanism | Evidence |
+- shared HMAC secrets
+- private keys and public keys
+- JWK and JWKS data
+- optional outbound JWKS URLs
+
+The repository includes test keys under `tests/keys/`; these are fixtures, not production secrets.
+
+## Configuration Points
+
+| Configuration | Scope | Notes |
 |---|---|---|
-| Package verification | GitHub Actions `main.yml` builds and checks the package on every change | `.github/workflows/main.yml` |
-| Test PyPI publishing | Pushes to `master` publish to Test PyPI when the repo owner matches | `.github/workflows/pypi-package.yml` | verified |
-| PyPI publishing | GitHub Release publication triggers real PyPI upload | `.github/workflows/pypi-package.yml` | verified |
-| Hosted docs | Read the Docs builds Sphinx docs on Python 3.11 with crypto extras | `.readthedocs.yaml` | verified |
+| decode `options` dict | per call or per `PyJWT` instance | controls signature and claim verification |
+| `algorithms` parameter | per decode call | caller-controlled allowlist; security-sensitive |
+| `PyJWKClient` args (`cache_keys`, `cache_jwk_set`, `lifespan`, `headers`, `timeout`, `ssl_context`) | per client instance | affects remote-key fetch and cache behavior |
+| install extras (`.[crypto]`) | environment-wide | changes available algorithms |
+
+## Deployment And Distribution
+
+There is no application deployment target in this repository.
+
+Verified distribution / publishing flows:
+
+- GitHub Actions `main.yml` builds and validates packages.
+- GitHub Actions `pypi-package.yml` builds packages on pushes, PRs, tags, and releases.
+- On `master` pushes in the canonical repository, packages are published to TestPyPI.
+- On published GitHub releases in the canonical repository, packages are published to PyPI.
+- Read the Docs builds documentation using Python 3.11 and installs `.[crypto]` plus docs dependencies.
 
 ## External Runtime Dependencies
 
-| Dependency | When it matters |
+| Dependency | Why it matters |
 |---|---|
-| `cryptography` | Required for asymmetric algorithm support |
-| Network access to JWKS endpoint | Required only when using `PyJWKClient` |
-| Sphinx + theme packages | Required for docs generation |
-| GitHub Actions / Read the Docs / PyPI services | Required for CI, docs hosting, and publishing |
+| Python interpreter | Core runtime |
+| `cryptography` | Required for asymmetric algorithms and advanced key types |
+| Remote JWKS endpoint | Required only for `PyJWKClient` integrations |
+| System clock | Affects `exp`, `nbf`, `iat`, and leeway validation |
 
-## One Real System Action Trace
+## One Real Runtime Flow
 
-### Verify a JWT against a remote JWKS endpoint
+### Verify an RS256 token using a remote JWKS
 
-1. Caller receives an encoded token.
-2. Caller constructs `PyJWKClient(<https-url>)`.
-3. `get_signing_key_from_jwt()` parses the unverified header to extract `kid`.
-4. `PyJWKClient` fetches or reuses a cached JWKS document.
-5. `PyJWKSet` / `PyJWK` convert the matching JWK into a usable public key.
-6. Caller passes that key into `jwt.decode(..., algorithms=[...])`.
-7. `PyJWS` verifies the signature.
-8. `PyJWT` validates registered claims and returns the payload dict.
-
-Evidence: `jwt/jwks_client.py`, `jwt/api_jwt.py`, `jwt/api_jws.py`, `tests/test_jwks_client.py`.
+```text
+host application receives JWT
+-> constructs PyJWKClient with JWKS URL
+-> PyJWKClient.get_signing_key_from_jwt(token)
+-> jwt.api_jwt.decode_complete(..., options={"verify_signature": False}) reads unverified header
+-> PyJWKClient fetches or reuses cached JWKS
+-> PyJWKClient matches `kid` to a signing key
+-> host application calls jwt.decode(token, signing_key.key, algorithms=["RS256"], ...)
+-> jwt.api_jws parses and verifies signature
+-> jwt.api_jwt validates claims
+-> payload dict is returned or an exception is raised
+```
 
 ## Main Runtime Flows
 
-### Encode
-
-- Payload dict enters `PyJWT.encode`.
-- Datetime claims are converted to numeric dates.
-- `PyJWS.encode` serializes headers and payload.
-- The selected algorithm signs the compact input.
-
-### Decode
-
-- `PyJWS.decode_complete` parses the compact token and verifies signature.
-- `PyJWT._decode_payload` loads JSON payload bytes into a dict.
-- `PyJWT._validate_claims` checks time, issuer, audience, subject, JTI, and required claims.
-
-### Docs build
-
-- `tox -e docs` installs docs dependencies and crypto extras.
-- Sphinx builds HTML docs and doctest output.
-- Python doctest also runs against `README.rst` and `docs/usage.rst`.
+| Flow | Owning code |
+|---|---|
+| Encode token | `jwt.api_jwt.PyJWT.encode` -> `jwt.api_jws.PyJWS.encode` -> `jwt.algorithms` |
+| Decode token | `jwt.api_jwt.PyJWT.decode_complete` -> `jwt.api_jws.PyJWS.decode_complete` -> claim validation |
+| Parse JWK | `jwt.api_jwk.PyJWK` |
+| Resolve signing key from JWKS | `jwt.jwks_client.PyJWKClient` + `jwt.jwk_set_cache.JWKSetCache` |
 
 ## Data Flow And Persistence
 
-- Normal library calls keep all state in memory.
-- `PyJWKClient` can cache full JWKS responses with a TTL and optionally cache per-key lookups via `functools.lru_cache`.
-- There is no persistent cache, no database, and no file output during normal package operations.
-- Release jobs produce distribution artifacts in `dist/`; docs builds produce output in `docs/_build/`.
+| Data | Persistence model |
+|---|---|
+| Tokens, headers, payloads, keys | caller-owned, in-memory only |
+| JWKS response cache | in-memory per `PyJWKClient` instance, TTL-based |
+| Signing key cache | optional in-memory LRU per `PyJWKClient` instance |
+| Build artifacts | produced by packaging and docs tasks, not stored as part of runtime state |
 
 ## Logging And Observability
 
-- The package does not implement its own logging layer.
-- Operational signals are exposed through exceptions, warnings, CI job status, and coverage reports.
-- Coverage is combined and uploaded to Codecov in CI.
-- Docs failures are treated as build failures because Sphinx runs with warnings as errors.
+No structured logging, metrics, tracing, or health endpoint was found inside the package.
+
+Operational observability is mostly external:
+
+- exceptions raised to the host application
+- CI workflow status
+- `python -m jwt.help` output for environment diagnostics
+- doctest and pytest failures
 
 ## Debugging Guide
 
-| Problem | First checks |
+| Problem area | First checks |
 |---|---|
-| Signature verification failure | Confirm the `algorithms` allow-list, key type, and whether `cryptography` is installed for asymmetric algorithms |
-| Claim validation failure | Inspect `exp`, `nbf`, `iat`, `aud`, `iss`, `sub`, `jti`, plus the `options` dict and `leeway` |
-| JWKS lookup failure | Check URL scheme, network availability, cache settings, and whether the token header `kid` matches a signing key |
-| Docs build failure | Run `tox -e docs`; inspect `docs/conf.py`, `README.rst`, and `docs/usage.rst` doctests |
-| Packaging metadata failure | Run `tox -e pypi-description` or `python -m twine check dist/*` |
+| Token fails to decode | confirm `algorithms` allowlist, key type, and claim options |
+| Asymmetric algorithm not found | confirm install included `.[crypto]` |
+| `PyJWKClient` cannot resolve key | inspect `kid`, JWKS contents, URI scheme, timeout, and cache settings |
+| Unexpected claim failures | inspect `options`, `audience`, `issuer`, `subject`, and current system time |
+| CI-only failures | compare local tox env with `.github/workflows/main.yml` matrix |
 
 ## Failure Modes
 
-| Failure mode | Likely symptom | Inspect first |
+| Failure mode | Likely symptom | Recovery path |
 |---|---|---|
-| Missing `cryptography` for asymmetric use | `NotImplementedError` or missing algorithm support | `jwt/algorithms.py`, install extras |
-| Invalid token structure | `DecodeError` for segments or padding | `jwt/api_jws.py` |
-| Claim mismatch or missing required claim | `InvalidAudienceError`, `InvalidIssuerError`, `MissingRequiredClaimError`, similar | `jwt/api_jwt.py` |
-| Bad JWKS endpoint or scheme | `PyJWKClientError` / connection errors | `jwt/jwks_client.py` |
-| Docs regressions | CI or Read the Docs build failure | `tox.ini`, `docs/conf.py`, RST files |
-| Release metadata issues | `twine check` or build job failures | `pyproject.toml`, workflow files |
+| Missing `cryptography` for asymmetric algorithm | `NotImplementedError` or crypto-related key errors | install `pyjwt[crypto]` |
+| Caller omits `algorithms` during verified decode | `DecodeError` requiring the argument | pass explicit allowlist |
+| Malformed token segments or JSON | `DecodeError` | inspect token producer or test fixture |
+| Unsupported or unusable JWK / JWKS | `PyJWKError` or `PyJWKSetError` | validate key material format |
+| Remote JWKS endpoint fails | `PyJWKClientConnectionError` | retry, inspect endpoint, or reuse cached client state |
+| No matching signing key by `kid` | `PyJWKClientError` | confirm token header and JWKS freshness |
 
 ## Manual Recovery Notes
 
-- If a JWKS-related change fails, re-run `tests/test_jwks_client.py` and temporarily disable caching options to isolate fetch vs cache behavior.
-- If a docs build fails, run `tox -e docs` locally because that path also covers doctest examples from the README and usage docs.
-- If packaging fails, rebuild with `python -m build` and validate with `twine check` before touching workflow files.
-- If CI failures differ by Python version, compare `tox.ini` env mapping and recent typing/formatter changes before assuming runtime logic is broken.
+- Recreate a `PyJWKClient` instance to drop both in-memory caches.
+- Force a JWKS refresh with `get_jwk_set(refresh=True)` or the retry path in `get_signing_key`.
+- For local environment debugging, compare `python -m jwt.help` output across machines.
+
+## Backups And Persistent State
+
+No backup strategy is required for the library itself because it does not own durable state.
 
 ## Security Operations
 
-- Supported security versions are documented in `SECURITY.md`.
-- Vulnerability reports should go through GitHub Security Advisories or `security@jpadilla.com`.
-- Security-sensitive edits should preserve explicit algorithm allow-lists and the untrusted-input assumptions visible in code and tests.
-
-## Current Operational Health
-
-- The repository has broad automated validation coverage configured in CI.
-- Publishing and hosted docs are automated and appear actively maintained from workflow configuration.
-- This review did not execute tests, builds, or network calls, so current green status was not independently verified here.
+| Topic | Repository evidence |
+|---|---|
+| Supported security-update line | `SECURITY.md` lists `2.10.x` as supported |
+| Vulnerability reporting | GitHub Security tab preferred; fallback email `security@jpadilla.com` |
+| Security-sensitive test areas | `tests/test_advisory.py`, algorithm and decode tests |
 
 ## Safe Change Workflow
 
-1. Change the narrowest relevant module under `jwt/`.
-2. Update or add the closest tests under `tests/`.
-3. Run the most specific `pytest` file first.
-4. Run `tox -e docs` when user-facing behavior, docstrings, or examples change.
-5. Run broader `tox` validation before release-sensitive merges.
-6. Update `README.rst` or `docs/` if public behavior changes.
+1. Identify whether the change affects public imports, decode defaults, algorithms, or JWKS behavior.
+2. Read the nearest tests before editing.
+3. Run the narrowest tox or pytest target that covers the touched path.
+4. If public behavior changes, run `tox -e docs` to keep examples and docs consistent.
+5. For packaging or metadata changes, check the GitHub workflow definitions as well as local tox config.
+
+## Current Operational Health
+
+- Verified from repo configuration: CI covers multiple Python versions and operating systems.
+- Verified from repo configuration: docs, lint, typing, packaging, and installability checks all exist.
+- Missing from this review: live confirmation that these tasks currently pass.
 
 ## Operational Gaps And Known Unknowns
 
-- The repository does not contain a single human-written release runbook; release operations are inferred from workflows.
-- There is no explicit policy document for cache tuning or network retry strategy in `PyJWKClient` beyond code and tests.
+- Could not verify package build, docs build, or tox environments locally because no heavy commands were run.
+- Could not determine whether maintainers rely on any release steps outside GitHub Actions, because no additional release documentation was found.
