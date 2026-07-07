@@ -435,7 +435,11 @@ Use `<br/>` for line breaks inside nodes.
 Every relationship arrow should have a label:
 
 ```mermaid
-api -->|"Reads/writes via JDBC"| database
+flowchart LR
+  api["Container: Java API<br/>Serves application requests"]
+  database[("Database: PostgreSQL<br/>Application data")]
+
+  api -->|"Reads/writes via JDBC"| database
 ```
 
 Avoid unlabeled arrows.
