@@ -12,6 +12,7 @@ The goal is repeatable behavior. A good skill should make AI output more structu
 | ------------ | --------------------------------------------------- | --------------------------------------------------------------------- |
 | `archdoc`    | Architecture documentation from repository evidence | Architecture overviews, onboarding docs, repository discovery         |
 | `adrgen`     | ADR discovery and draft generation                  | Capturing architectural decisions and decision candidates             |
+| `c4doc`      | Repository-specific C4 documentation                | C4 system context, container, component, deployment, and dynamic views |
 | `mermaiddoc` | Practical Mermaid diagram generation                | Flowcharts, sequence diagrams, component diagrams, data flow diagrams |
 
 ## Skill design principles
@@ -105,6 +106,21 @@ Use `adrgen` when:
 * a reviewer needs to distinguish accepted decisions from weak assumptions
 
 The skill should be careful with status. If the repository does not prove that a decision was formally accepted, the output should use candidate or proposed status.
+
+## `c4doc`
+
+`c4doc` guides an AI assistant through generating practical C4 architecture documentation for a specific repository.
+
+It is useful when you want a repository-tailored system context, container, component, deployment, or dynamic-flow documentation set without forcing artificial diagrams. The output is stored under `docs/c4-documentation/` in the repository being documented and should make evidence, confidence, and skipped views explicit.
+
+Use `c4doc` when:
+
+* generating or refreshing C4 architecture documentation
+* documenting a repository with C4-style views that render in GitHub
+* creating reviewable Mermaid diagrams tied to repository evidence
+* capturing which C4 levels are useful and which should be skipped
+
+In Copilot Chat, a workspace prompt can expose this workflow as `/c4doc`.
 
 ## `mermaiddoc`
 

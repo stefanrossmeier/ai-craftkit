@@ -15,6 +15,7 @@ Current focus areas:
 | Area                         | Purpose                                                                 |
 | ---------------------------- | ----------------------------------------------------------------------- |
 | Architecture documentation   | Inspect a repository and produce grounded architecture documentation.   |
+| C4 documentation             | Generate practical C4-style documentation with selective useful views. |
 | ADR generation               | Identify architectural decisions and prepare reviewable ADR candidates. |
 | Mermaid diagrams             | Create small, readable, GitHub-compatible Mermaid diagrams.             |
 | Developer workflow utilities | Small scripts and examples that support day-to-day repository work.     |
@@ -49,6 +50,8 @@ ai-craftkit/
 │   │   └── SKILL.md
 │   ├── adrgen/
 │   │   └── SKILL.md
+│   ├── c4doc/
+│   │   └── SKILL.md
 │   └── mermaiddoc/
 │       └── SKILL.md
 ├── examples/
@@ -78,6 +81,14 @@ Generates ADR candidates from repository evidence.
 The skill helps identify decisions that are already visible in the codebase, configuration, dependencies, deployment setup, or documentation. It can prepare ADR drafts, but it should not silently mark weakly supported assumptions as accepted decisions.
 
 Use it when a repository contains architectural choices that should be captured, reviewed, and made explicit.
+
+### `c4doc`
+
+Creates repository-specific C4 architecture documentation and Mermaid diagrams.
+
+The skill guides an AI assistant to inspect the repository, decide which C4 views are actually useful, and write reviewable Markdown documentation under `docs/c4-documentation/`. It is intentionally conservative: it should create only the diagrams and supporting files that fit the repository instead of forcing every C4 level.
+
+Use it when you want a project-tailored C4 documentation set with evidence, confidence levels, and explicit skipped views. In Copilot Chat, you can expose it with the workspace prompt command `/c4doc`.
 
 ### `mermaiddoc`
 
@@ -120,11 +131,22 @@ Create a GitHub-compatible Mermaid diagram that shows the main components
 and the data flow between them. Keep the diagram small and readable.
 ```
 
+For C4 documentation:
+
+```text
+Use the c4doc skill from ai-craftkit.
+
+Inspect this repository and generate only the useful C4 architecture
+documentation under docs/c4-documentation. Mark inferred elements clearly
+and explain which views were skipped.
+```
+
 ## Example use cases
 
 This repository is useful for:
 
 * creating a first architecture overview of an unfamiliar repository
+* generating selective C4 documentation for an existing repository
 * documenting the main components of an application
 * generating onboarding material for developers
 * preparing ADR candidates from existing code

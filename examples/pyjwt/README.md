@@ -20,6 +20,7 @@ PyJWT is a Python library for working with JSON Web Tokens. It is a useful examp
 | ------------ | ------------- | ----------------------------------------------------------------- |
 | `archdoc`    | `archdoc/`    | Generated architecture documentation for the PyJWT repository.    |
 | `adrgen`     | `adrgen/`     | Discovered architectural decision candidates from the repository. |
+| `c4doc`      | `c4doc/`      | Generated selective C4 architecture documentation for PyJWT.      |
 | `mermaiddoc` | `mermaiddoc/` | Generated Mermaid-based explanations for selected PyJWT flows.    |
 
 ## Prompts used
@@ -50,6 +51,18 @@ Generated output:
 adrgen/ADR_CANDIDATES.md
 ```
 
+### C4 documentation
+
+```text
+/c4doc Create the c4 documentation for the pyjwt repo here in this workspace.
+```
+
+Generated output:
+
+```text
+c4doc/
+```
+
 ### Mermaid documentation
 
 ```text
@@ -73,6 +86,9 @@ examples/pyjwt/
 ├── adrgen/
 │   ├── README.md
 │   └── ADR_CANDIDATES.md
+├── c4doc/
+│   ├── README.md
+│   └── c4-documentation/
 └── mermaiddoc/
     └── README.md
 ```
