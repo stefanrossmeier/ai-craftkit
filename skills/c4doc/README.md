@@ -8,6 +8,42 @@ It creates Markdown documentation and Mermaid diagrams that can be viewed direct
 
 This skill can be exposed in Copilot Chat via `/c4doc`.
 
+## Current output shape
+
+The current version of the skill is intentionally selective.
+
+It always generates:
+
+```text
+docs/c4-documentation/index.md
+docs/c4-documentation/generation-report.md
+```
+
+It usually generates:
+
+```text
+docs/c4-documentation/architecture-model.md
+```
+
+It may additionally generate only the views that are justified by repository evidence:
+
+```text
+docs/c4-documentation/system-context.md
+docs/c4-documentation/container.md
+docs/c4-documentation/components/<container-name>.md
+docs/c4-documentation/code/<component-name>.md
+docs/c4-documentation/deployment/<environment-or-platform>.md
+docs/c4-documentation/dynamic/<use-case>.md
+```
+
+The skill should explicitly record which views were skipped and why.
+
+Every generated Markdown file should also include:
+
+* a lightweight provenance block near the top
+* evidence-backed descriptions and confidence labels
+* links to related generated C4 documents where helpful
+
 ## What this skill does
 
 The skill analyzes a repository and creates repository-specific C4 architecture documentation under:
@@ -64,6 +100,8 @@ flowchart LR
 It does **not** use Mermaid C4 syntax.
 
 This keeps the generated documentation simple, readable, and compatible with normal GitHub Markdown rendering.
+
+For example, a small library repository may only justify a system context view, one component view, an architecture model, and a generation report. That smaller output is a better result than a full but artificial C4 stack.
 
 ## What C4 levels are supported?
 
@@ -253,6 +291,12 @@ You can also add focus text after the command, for example:
 /c4doc create only the system context and container views for this repository
 ```
 
+The slash command can also be used for refresh or review-oriented work, for example:
+
+```text
+/c4doc refresh the existing docs and remove unsupported claims
+```
+
 Use prompts like:
 
 ```text
@@ -293,6 +337,16 @@ Generated documentation should:
 8. Explain skipped views.
 9. Keep diagrams small and readable.
 10. Avoid listing every dependency as a diagram element.
+
+## What a good result looks like
+
+A good `c4doc` result should:
+
+* choose a small set of views that fit the repository
+* keep C1, C2, and C3 diagrams readable in GitHub
+* avoid inventing deployment or runtime topology without evidence
+* make inferred elements and omitted views explicit
+* leave a reviewer with a maintainable documentation set rather than a diagram dump
 
 ## Confidence model
 

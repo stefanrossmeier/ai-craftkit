@@ -53,6 +53,13 @@ templates/COCKBURN_REVIEW.template.md
 
 The final report must not look like an unfilled template. The skill should remove placeholder-only sections, unused example rows, empty tables, and unresolved bracket placeholders before writing the final file.
 
+Current generated reports should also include:
+
+* a lightweight provenance block near the top
+* scope and update metadata such as review scope, doc status, and source basis
+* a concise executive summary before the detailed findings
+* evidence-rich findings with severity, confidence, and suggested moves
+
 ## Evidence Requirement
 
 Every architectural claim in `docs/COCKBURN_REVIEW.md` must be supported by evidence from the repository under investigation.

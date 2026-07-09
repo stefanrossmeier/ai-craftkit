@@ -2,7 +2,7 @@
 
 This folder contains example documentation generated for the public `pyjwt` repository using the `c4doc` skill from `ai-craftkit`.
 
-The purpose of this example is to show how a short prompt can produce a practical, reviewable C4-style documentation set without forcing artificial views onto a small library repository.
+The example is meant to show the current output shape of the skill for a library-shaped repository: a selective C4 set with explicit skipped views rather than a forced full-stack diagram pack.
 
 ## Source repository
 
@@ -24,78 +24,104 @@ skills/c4doc/SKILL.md
 
 The `c4doc` skill inspects a repository, decides which C4 views are actually useful, generates Markdown under `docs/c4-documentation/`, and explicitly explains which views were skipped.
 
-## Prompt used
+## Generated output
 
-The prompt used for this example was intentionally short:
+The live skill writes its generated files to the target repository's `docs/c4-documentation/` directory.
+
+For this checked-in example, that output is stored locally under:
 
 ```text
-/c4doc Create the c4 documentation for the pyjwt repo here in this workspace.
+c4-documentation/
 ```
 
-This was enough for the skill to identify a useful reduced documentation set:
+This example currently contains:
 
-1. a C1 system context view
-2. a C3-style component view for the `jwt` package
-3. a shared architecture model and generation report
-4. explicit skipped views for container, deployment, dynamic, and code levels
+```text
+c4-documentation/index.md
+c4-documentation/architecture-model.md
+c4-documentation/generation-report.md
+c4-documentation/system-context.md
+c4-documentation/components/jwt-library.md
+```
 
-## Generated files
+The responsibility split is:
 
-This folder contains:
+* `index.md`: entry point and reading order for the generated C4 set
+* `architecture-model.md`: shared source-of-truth tables for systems, components, relationships, evidence, and omissions
+* `generation-report.md`: inspection summary, generated files, skipped views, confirmed facts, and review notes
+* `system-context.md`: C1 view of PyJWT, its users, and external integration boundary
+* `components/jwt-library.md`: focused component view for the main `jwt` package responsibilities
 
-| File | Purpose |
-| --- | --- |
-| `c4-documentation/index.md` | Entry point and reading order for the generated C4 set |
-| `c4-documentation/architecture-model.md` | Shared source-of-truth tables for systems, components, relationships, and omissions |
-| `c4-documentation/generation-report.md` | Inspection summary, generated files, skipped views, confirmed facts, and review notes |
-| `c4-documentation/system-context.md` | C1 view of PyJWT, its users, and the JWKS integration boundary |
-| `c4-documentation/components/jwt-library.md` | Focused component view for the main `jwt` package responsibilities |
+## What this checked-in example reflects
 
-All generated files include:
+The generated files in `c4-documentation/` reflect the current skill conventions rather than an older all-levels format. In particular, they now include:
 
-* a provenance block with repository URL, commit hash, and exact prompt
+* a lightweight provenance block near the top of each generated document
+* explicit skipped-view reporting instead of empty placeholder diagrams
 * evidence-backed descriptions and confidence distinctions
-* GitHub-compatible Mermaid diagrams where a diagram is useful
-* explicit omissions when a C4 level would be artificial
+* GitHub-compatible Mermaid diagrams only where a diagram adds clarity
+* a smaller view set because PyJWT is a library rather than a deployable multi-container system
 
-## Why this example exists
+The checked-in PyJWT docs are intentionally a selective architecture pass, not official project documentation.
 
-This example demonstrates a practical C4 documentation workflow for a library:
+## Prompt and provenance
 
-* inspect a real repository
-* generate only the views that fit the repository shape
-* avoid inventing deployment or container boundaries that do not exist
-* record evidence, inferences, and skipped views
-* keep the output small enough for pull-request review
+The exact prompt used for the checked-in example is recorded inside the generated C4 documents themselves in the provenance block at the top of each file.
 
-The goal is not to auto-generate a perfect architecture truth. The goal is to produce a grounded first draft that gives maintainers a usable review surface.
+That is the current source of truth for the example run, because the skill now requires generated documents to preserve directly available provenance rather than reconstructing it later in this README.
 
-## What to look for
+## What the skill looks for
 
-When reviewing the generated files, pay attention to whether the documentation is:
+When run against a repository like PyJWT, `c4doc` may inspect evidence such as:
 
-* specific to PyJWT
-* appropriately selective about which C4 levels were generated
-* clear about what is confirmed versus inferred
-* honest about the lack of deployable runtime structure in the repository
-* small enough to review and maintain
-* consistent across the index, model, diagrams, and report
+* repository and package structure
+* public API entry points
+* internal module boundaries
+* tests and supporting docs
+* packaging metadata
+* optional integration surfaces such as JWKS support
+* runtime or deployment artifacts when present
 
-The most important quality check for this example is whether the skipped views feel justified rather than missing.
+For a library like PyJWT, a good result may intentionally skip container, deployment, dynamic, or code views when the repository does not justify them.
 
-## Folder structure
+## How to review the output
 
-```text
-examples/pyjwt/c4doc/
-├── README.md
-└── c4-documentation/
-    ├── architecture-model.md
-    ├── generation-report.md
-    ├── index.md
-    ├── system-context.md
-    └── components/
-        └── jwt-library.md
-```
+Review the generated documentation with these questions:
+
+* Does it choose the right subset of C4 views for PyJWT?
+* Are the generated diagrams small, readable, and GitHub-compatible?
+* Are confirmed and inferred elements separated clearly?
+* Are skipped views justified rather than simply missing?
+* Would a maintainer recognize the library structure from this documentation?
+* Is anything overstated as deployable topology when the repository is really a library?
+
+A good `c4doc` result should feel selective and defensible rather than exhaustive.
+
+## Expected value
+
+This example demonstrates how `c4doc` can document a real repository without forcing every C4 level into existence.
+
+The value is in producing:
+
+* a reviewable system context
+* one useful component view
+* a shared architecture model
+* a generation report that explains omissions and review needs
+
+## Limitations
+
+This output should not be read as official PyJWT documentation.
+
+It is an external documentation exercise based on repository inspection. Some structure is inferred from code organization, tests, and existing docs rather than confirmed by project maintainers. The skill should make those cases visible.
+
+## Suggested workflow
+
+1. Run `c4doc` against the target repository.
+2. Store the generated `docs/c4-documentation/` output in this example folder.
+3. Review the generated view set against the repository shape.
+4. Remove unsupported claims and merge or skip weak views.
+5. Keep the useful model, diagrams, and generation report.
+6. Use `archdoc` or `cockburn-review` when deeper architecture context is needed.
 
 ## Notes
 

@@ -12,7 +12,8 @@ The goal is repeatable behavior. A good skill should make AI output more structu
 | ------------ | --------------------------------------------------- | --------------------------------------------------------------------- |
 | `archdoc`    | Architecture documentation from repository evidence | Architecture overviews, onboarding docs, repository discovery         |
 | `adrgen`     | ADR discovery and draft generation                  | Capturing architectural decisions and decision candidates             |
-| `c4doc`      | Repository-specific C4 documentation                | C4 system context, container, component, deployment, and dynamic views |
+| `c4doc`      | Repository-specific C4 documentation                | Selective C4 system context, container, component, deployment, and dynamic views |
+| `cockburn-review` | Architectural boundary review                  | Responsibility drift, knowledge leakage, boundary bypasses, and change amplification |
 | `mermaiddoc` | Practical Mermaid diagram generation                | Flowcharts, sequence diagrams, component diagrams, data flow diagrams |
 
 ## Skill design principles
@@ -122,6 +123,26 @@ Use `c4doc` when:
 
 In Copilot Chat, a workspace prompt can expose this workflow as `/c4doc`.
 
+## `cockburn-review`
+
+`cockburn-review` guides an AI assistant through an evidence-based architectural boundary review.
+
+It is useful when you want to challenge how responsibilities and knowledge are distributed across a repository. Instead of generating general architecture docs, it looks for signals such as responsibility drift, knowledge leakage, framework coupling, boundary bypasses, semantic duplication, and future changes that will become harder than they should be.
+
+Typical output includes:
+
+* `docs/COCKBURN_REVIEW.md`
+
+Use `cockburn-review` when:
+
+* reviewing whether modules know infrastructure details they should not know
+* checking whether domain logic is doing work that belongs elsewhere
+* preparing for refactoring around architectural seams
+* stress-testing a repository against future change scenarios
+* producing a reviewable architecture critique with concrete evidence
+
+The skill should be pragmatic. It should not assume the repository is trying to follow Clean Architecture, DDD, or another named style unless the repository itself provides evidence for that intent.
+
 ## `mermaiddoc`
 
 `mermaiddoc` helps create GitHub-compatible Mermaid diagrams.
@@ -180,15 +201,27 @@ Create a Mermaid sequence diagram for the startup and data processing flow.
 Use GitHub-compatible syntax, short labels, and stable node names.
 ```
 
+Example:
+
+```text
+Use the cockburn-review skill.
+
+Inspect this repository and create an evidence-based boundary review.
+Flag responsibility drift, knowledge leakage, and future changes that
+look unnecessarily expensive.
+```
+
 ## Recommended workflow
 
 A useful documentation workflow is:
 
 1. Run `archdoc` to understand the repository.
-2. Use `mermaiddoc` to visualize the main structure or flows.
-3. Use `adrgen` to capture architectural decisions that are visible in the codebase.
-4. Review all generated output manually.
-5. Commit only the parts that are accurate, useful, and maintainable.
+2. Use `cockburn-review` to test the current boundaries and responsibility split.
+3. Use `mermaiddoc` to visualize the main structure or flows.
+4. Use `adrgen` to capture architectural decisions that are visible in the codebase.
+5. Use `c4doc` when a selective C4 view set will help explain the repository.
+6. Review all generated output manually.
+7. Commit only the parts that are accurate, useful, and maintainable.
 
 ## Quality checklist
 

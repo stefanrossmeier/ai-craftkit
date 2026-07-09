@@ -1,6 +1,6 @@
 # ai-craftkit
 
-Reusable AI agent skills for evidence-based repository documentation, architecture mapping, ADR capture, and Mermaid diagrams.
+Reusable AI agent skills for evidence-based repository documentation, architecture mapping, Cockburn-style boundary review, ADR capture, and Mermaid diagrams.
 
 AI agents can move quickly through a codebase, but speed alone is not useful when the output is vague, overconfident, or hard to review. This repository collects practical skill definitions that guide an AI assistant toward structured, evidence-based engineering work.
 
@@ -16,6 +16,7 @@ Current focus areas:
 | ---------------------------- | ----------------------------------------------------------------------- |
 | Architecture documentation   | Inspect a repository and produce grounded architecture documentation.   |
 | C4 documentation             | Generate practical C4-style documentation with selective useful views. |
+| Cockburn review              | Review architectural boundaries for responsibility drift and knowledge leakage. |
 | ADR generation               | Identify architectural decisions and prepare reviewable ADR candidates. |
 | Mermaid diagrams             | Create small, readable, GitHub-compatible Mermaid diagrams.             |
 | Developer workflow utilities | Small scripts and examples that support day-to-day repository work.     |
@@ -51,6 +52,8 @@ ai-craftkit/
 │   ├── adrgen/
 │   │   └── SKILL.md
 │   ├── c4doc/
+│   │   └── SKILL.md
+│   ├── cockburn-review/
 │   │   └── SKILL.md
 │   └── mermaiddoc/
 │       └── SKILL.md
@@ -89,6 +92,14 @@ Creates repository-specific C4 architecture documentation and Mermaid diagrams.
 The skill guides an AI assistant to inspect the repository, decide which C4 views are actually useful, and write reviewable Markdown documentation under `docs/c4-documentation/`. It is intentionally conservative: it should create only the diagrams and supporting files that fit the repository instead of forcing every C4 level.
 
 Use it when you want a project-tailored C4 documentation set with evidence, confidence levels, and explicit skipped views. In Copilot Chat, you can expose it with the workspace prompt command `/c4doc`.
+
+### `cockburn-review`
+
+Generates evidence-based architectural boundary reviews.
+
+The skill applies a Cockburn-inspired lens to the repository: which responsibilities appear to be in the wrong place, and which modules know details they should not need to know. Its main output is a reviewable `docs/COCKBURN_REVIEW.md` report with evidence, severity, confidence, and suggested moves.
+
+Use it when you want an AI assistant to inspect responsibility drift, knowledge leakage, boundary bypasses, semantic duplication, or change-amplifying dependencies without forcing a specific architecture style onto the codebase.
 
 ### `mermaiddoc`
 
@@ -141,12 +152,23 @@ documentation under docs/c4-documentation. Mark inferred elements clearly
 and explain which views were skipped.
 ```
 
+For architectural boundary review:
+
+```text
+Use the cockburn-review skill from ai-craftkit.
+
+Inspect this repository and produce an evidence-based boundary review.
+Focus on misplaced responsibilities, knowledge leakage, and changes that
+will become unnecessarily hard.
+```
+
 ## Example use cases
 
 This repository is useful for:
 
 * creating a first architecture overview of an unfamiliar repository
 * generating selective C4 documentation for an existing repository
+* reviewing architectural boundaries for responsibility drift and knowledge leakage
 * documenting the main components of an application
 * generating onboarding material for developers
 * preparing ADR candidates from existing code
