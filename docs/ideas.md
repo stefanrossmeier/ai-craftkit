@@ -1,2 +1,4 @@
 - treesitter as base tool
-- tokenizer
+- tokenizer eval
+- adverserial review
+- grafify
