@@ -14,6 +14,7 @@ The goal is repeatable behavior. A good skill should make AI output more structu
 | `adrgen`     | ADR discovery and draft generation                  | Capturing architectural decisions and decision candidates             |
 | `c4doc`      | Repository-specific C4 documentation                | Selective C4 system context, container, component, deployment, and dynamic views |
 | `cockburn-review` | Architectural boundary review                  | Responsibility drift, knowledge leakage, boundary bypasses, and change amplification |
+| `glossary`   | Repository-specific domain glossary generation      | Ubiquitous language, domain terminology, bounded-context vocabulary, terminology drift |
 | `mermaiddoc` | Practical Mermaid diagram generation                | Flowcharts, sequence diagrams, component diagrams, data flow diagrams |
 
 ## Skill design principles
@@ -143,6 +144,26 @@ Use `cockburn-review` when:
 
 The skill should be pragmatic. It should not assume the repository is trying to follow Clean Architecture, DDD, or another named style unless the repository itself provides evidence for that intent.
 
+## `glossary`
+
+`glossary` guides an AI assistant through discovering and documenting repository-specific domain language.
+
+It is useful when you want an evidence-based glossary of business or problem-domain terms rather than a software-internals inventory. The output is intended to help developers, architects, analysts, testers, and future agents use the same language consistently and see where meanings are inferred, uncertain, or in tension.
+
+Typical outputs include:
+
+* `docs/GLOSSARY.md`
+
+Use `glossary` when:
+
+* identifying candidate ubiquitous language in a repository
+* documenting domain terminology with evidence from docs, tests, and code
+* surfacing inconsistent, overloaded, or competing terms
+* highlighting missing definitions that need domain-expert review
+* refreshing an existing glossary and checking for terminology drift
+
+The skill should focus on domain meaning, not framework or implementation jargon.
+
 ## `mermaiddoc`
 
 `mermaiddoc` helps create GitHub-compatible Mermaid diagrams.
@@ -204,6 +225,16 @@ Use GitHub-compatible syntax, short labels, and stable node names.
 Example:
 
 ```text
+Use the glossary skill.
+
+Inspect this repository and create an evidence-based glossary.
+Focus on domain-specific terms, add repository evidence, and make
+ambiguous terminology visible instead of normalizing it silently.
+```
+
+Example:
+
+```text
 Use the cockburn-review skill.
 
 Inspect this repository and create an evidence-based boundary review.
@@ -216,12 +247,13 @@ look unnecessarily expensive.
 A useful documentation workflow is:
 
 1. Run `archdoc` to understand the repository.
-2. Use `cockburn-review` to test the current boundaries and responsibility split.
-3. Use `mermaiddoc` to visualize the main structure or flows.
-4. Use `adrgen` to capture architectural decisions that are visible in the codebase.
-5. Use `c4doc` when a selective C4 view set will help explain the repository.
-6. Review all generated output manually.
-7. Commit only the parts that are accurate, useful, and maintainable.
+2. Use `glossary` to capture candidate ubiquitous language and terminology tensions.
+3. Use `cockburn-review` to test the current boundaries and responsibility split.
+4. Use `mermaiddoc` to visualize the main structure or flows.
+5. Use `adrgen` to capture architectural decisions that are visible in the codebase.
+6. Use `c4doc` when a selective C4 view set will help explain the repository.
+7. Review all generated output manually.
+8. Commit only the parts that are accurate, useful, and maintainable.
 
 ## Quality checklist
 
