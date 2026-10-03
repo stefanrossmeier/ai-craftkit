@@ -1,3 +1,9 @@
+---
+name: cockburn-review
+description: Review repository boundaries for responsibility drift, knowledge leakage, boundary bypasses, and change amplification using concrete repository evidence. Use for a focused Cockburn-style architecture critique.
+license: Apache-2.0
+---
+
 # Cockburn Review Skill
 
 Command: `/cockburn-review`
@@ -267,10 +273,10 @@ Look for:
 ```text
 README.md
 docs/
-docs/ARCHITECTURE.md
-docs/API_SURFACE.md
-docs/OPERATIONS.md
-docs/REPO_MAP.md
+docs/archdoc/ARCHITECTURE.md
+docs/archdoc/API_SURFACE.md
+docs/archdoc/OPERATIONS.md
+docs/archdoc/REPO_MAP.md
 docs/adr/
 CONTRIBUTING.md
 DEVELOPMENT.md

@@ -1,6 +1,6 @@
 # Archdoc
 
-`archdoc` is the repository documentation skill in `ai-craftkit`.
+`archdoc` is the central repository-documentation skill in `ai-craftkit`.
 
 ## Command
 
@@ -8,40 +8,39 @@
 /archdoc
 ```
 
-It inspects a repository and produces four primary architecture documentation outputs in `docs/`:
+It inspects a repository and creates a concise, evidence-based architecture documentation set under:
 
-- `REPO_MAP.md`
-- `ARCHITECTURE.md`
-- `API_SURFACE.md`
-- `OPERATIONS.md`
+```text
+docs/archdoc/
+```
 
-Responsibility split:
+Canonical outputs:
 
-- `REPO_MAP.md`: repository orientation, important files, commands, conventions, glossary, and agent navigation.
-- `ARCHITECTURE.md`: static architecture, modules, boundaries, dependencies, data ownership, and high-level interface ownership.
-- `API_SURFACE.md`: detailed public and integration-relevant interfaces, including endpoints, commands, events, exports, schemas, auth rules, and compatibility notes.
-- `OPERATIONS.md`: runtime behavior, local execution, deployment, configuration, debugging, failure modes, health checks, recovery, and operational verification.
+- `docs/archdoc/REPO_MAP.md` — repository orientation, important paths, entry points, commands, tests, and observed conventions.
+- `docs/archdoc/ARCHITECTURE.md` — static architecture, boundaries, dependencies, data/state ownership, and high-level interface ownership.
+- `docs/archdoc/API_SURFACE.md` — detailed public and integration-relevant contracts, when such a surface exists.
+- `docs/archdoc/OPERATIONS.md` — runtime, build/release/deploy, verification, observability, and failure handling, when operational behavior is meaningful.
 
-The skill is evidence-based and should keep these document boundaries clear. Detailed interface contracts belong in `API_SURFACE.md`, not in `ARCHITECTURE.md` or `OPERATIONS.md`.
+`REPO_MAP.md` deliberately does **not** contain a domain glossary or a general agent work guide. Domain language belongs to the `glossary` skill; normative agent instructions belong in `AGENTS.md` or the repository's instruction mechanism.
+
+## Design Rules
+
+`archdoc` should:
+
+- prefer repository evidence over assumptions
+- mark material uncertainty as verified, inferred, uncertain, or missing
+- separate observed conventions from human-owned standards
+- avoid duplicating the same detail across the four documents
+- preserve useful human-authored material during updates
+- use optional diagrams only when they improve understanding
+- avoid exhaustive generated inventories when a canonical spec already exists
 
 ## Recommended Workflow
 
-1. Start with safe read-only inspection.
-2. Inspect the existing docs, manifests, source tree, tests, and runtime files.
-3. Generate or update the four documentation files.
-4. Remove irrelevant template sections and unresolved placeholders.
-5. Mark uncertainty clearly and report the most important gaps.
+1. Read repository instructions, existing docs, ADRs, and existing `docs/archdoc/` files.
+2. Inspect manifests, source structure, entry points, tests, and important runtime/configuration files.
+3. Trace representative structure and interfaces rather than reading everything indiscriminately.
+4. Create or refresh only the archdoc files that are useful for the repository.
+5. Report skipped documents and important evidence gaps.
 
-If the user names a specific area, focus the write-up there but keep enough repository context to stay accurate.
-
-## Safety and Evidence
-
-`archdoc` should prefer repository evidence over assumptions.
-
-It should:
-
-* start with safe read-only inspection
-* avoid secrets and never copy secret values
-* avoid destructive commands
-* avoid installs, servers, Docker, or deployment commands unless explicitly asked or clearly necessary
-* mark claims as verified, inferred, uncertain, or missing when needed
+See [`SKILL.md`](SKILL.md) for the full workflow and evidence rules.

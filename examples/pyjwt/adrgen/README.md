@@ -1,8 +1,10 @@
 # PyJWT ADR discovery example
 
+> **Historical snapshot:** this checked-in example predates the simplified `adrgen` status model and supporting templates. The current `skills/adrgen/SKILL.md` and templates are normative, especially the distinction between decision status and implementation status.
+
 This folder contains example ADR discovery output generated for the public `pyjwt` repository using the `adrgen` skill from `ai-craftkit`.
 
-The example is meant to show the current output shape of the skill in `discover` mode: a reviewable ADR index plus an `ADR_CANDIDATES.md` funnel that captures evidence-backed decision candidates before any final ADRs are generated.
+The example shows an earlier output shape of the skill in `discover` mode: a reviewable ADR index plus an `ADR_CANDIDATES.md` funnel that captures evidence-backed decision candidates before any final ADRs are generated.
 
 ## Source repository
 

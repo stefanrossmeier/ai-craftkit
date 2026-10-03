@@ -35,13 +35,26 @@ LICENSE
 CONTRIBUTING.md
 ```
 
-Each skill should usually contain:
+Each skill should contain `SKILL.md` with Agent Skills YAML frontmatter. Supporting files are optional:
 
 ```text
 SKILL.md
-README.md
-templates/
+README.md        # recommended for human-facing usage notes
+templates/       # when output shapes are reusable
+examples/        # when compact examples help
 ```
+
+Required frontmatter:
+
+```yaml
+---
+name: skill-name
+description: Concrete routing description explaining when to use the skill.
+license: Apache-2.0
+---
+```
+
+Keep the description useful for skill selection without requiring the agent to load the full body.
 
 Examples should go into:
 
@@ -55,6 +68,7 @@ A good skill should have a clear purpose and a small number of meaningful workfl
 
 When adding or changing a skill, check that it includes:
 
+* valid YAML frontmatter with `name`, `description`, and `license`
 * a clear command name
 * a concrete purpose
 * expected inputs
@@ -63,8 +77,8 @@ When adding or changing a skill, check that it includes:
 * safety rules
 * evidence and uncertainty rules
 * template handling rules, if templates are used
-* completion report expectations
-* failure handling
+* completion report expectations when the skill creates durable artifacts
+* failure handling where it adds value
 * non-goals
 
 Avoid adding many command-line-like options unless they represent real, important workflows.
@@ -100,7 +114,6 @@ Templates should:
 * explain the purpose of the document
 * include evidence labels where relevant
 * distinguish verified, inferred, uncertain, and missing information
-* include agent guidance when useful
 * avoid placeholder-heavy final output
 * avoid generic boilerplate
 
@@ -187,6 +200,8 @@ Keep documentation:
 * useful for future maintainers
 * useful for coding agents
 
+Prefer progressive disclosure: keep the core workflow in `SKILL.md`, and move large output shapes, examples, or reference material into supporting files instead of repeating them inline.
+
 Avoid:
 
 * marketing language
@@ -209,7 +224,7 @@ sequenceDiagram
 
 Diagrams should be small, readable, and focused.
 
-Use `docs/diagrams/` for generated diagram documentation.
+Prefer inserting a diagram into the document that needs it. Create a standalone `docs/diagrams/` tree only when the user or repository explicitly wants one.
 
 Avoid custom CSS, theme blocks, or layout tricks that may render poorly on GitHub.
 

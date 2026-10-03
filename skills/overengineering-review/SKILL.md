@@ -1,3 +1,9 @@
+---
+name: overengineering-review
+description: Review a repository for accidental or unjustified implementation complexity and propose simpler alternatives when evidence supports them. Use for evidence-based overengineering and complexity reviews.
+license: Apache-2.0
+---
+
 # Overengineering Review Skill
 
 Command: `/overengineering-review`

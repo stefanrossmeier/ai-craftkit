@@ -1,3 +1,9 @@
+---
+name: c4doc
+description: Generate or refresh selective C4-style architecture documentation for a repository using evidence-based GitHub-renderable Mermaid views. Use when the user explicitly wants C4 system, container, component, deployment, or dynamic views.
+license: Apache-2.0
+---
+
 # C4 Architecture Documentation Skill
 
 Command: `/c4doc`

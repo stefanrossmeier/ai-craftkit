@@ -1,5 +1,7 @@
 # PyJWT architecture documentation example
 
+> **Historical snapshot:** these checked-in files were produced by an earlier `archdoc` iteration. The current skill writes equivalent repository architecture documents under `docs/archdoc/` and no longer puts glossary or general agent-work instructions in `REPO_MAP.md`. Treat the current `skills/archdoc/SKILL.md` and templates as normative.
+
 This folder contains example architecture documentation generated for the public `pyjwt` repository using the `archdoc` skill from `ai-craftkit`.
 
 The example is meant to show the current output shape of the skill: evidence-based repository documentation split across repository map, architecture, interface surface, and operations documents.

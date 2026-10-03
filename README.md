@@ -1,47 +1,101 @@
 # ai-craftkit
 
-Reusable AI agent skills for evidence-based repository documentation, architecture mapping, domain glossary extraction, Cockburn-style boundary review, ADR capture, and Mermaid diagrams.
+Reusable AI agent skills for evidence-based software engineering work.
 
-AI agents can move quickly through a codebase, but speed alone is not useful when the output is vague, overconfident, or hard to review. This repository collects practical skill definitions that guide an AI assistant toward structured, evidence-based engineering work.
+The repository focuses on a simple idea: coding agents should not have to rediscover a repository from scratch, but the documentation they consume should also not become a large pile of duplicated or speculative AI-generated text.
 
-The focus is currently on software architecture documentation and repository understanding. The skills are written for use with AI coding assistants, agent workflows, or prompt-based development setups where repeatable behavior matters.
+`ai-craftkit` therefore favors small, reviewable artifacts with explicit evidence boundaries.
 
-## What this repository contains
+## Core model
 
-`ai-craftkit` is an early collection of reusable skills and supporting examples.
+The current toolkit separates several kinds of knowledge:
 
-Current focus areas:
+| Artifact / skill | Responsibility |
+|---|---|
+| `AGENTS.md` | Human-owned agent instructions and routing: what must be followed and which docs to read for a task. |
+| `archdoc` | Current repository facts: orientation, static architecture, interfaces, and operations. |
+| `adrgen` | Architectural decisions: what humans decided, what is only implemented, and what rationale is actually evidenced. |
+| `glossary` | Domain language and terminology. |
+| `mermaiddoc` | A small helper for one specific diagram when a visual is useful. |
+| review skills | Point-in-time analysis of boundaries or unnecessary complexity. |
+| `c4doc` | Optional C4-style views when a project deliberately wants C4 documentation. |
 
-| Area                         | Purpose                                                                 |
-| ---------------------------- | ----------------------------------------------------------------------- |
-| Architecture documentation   | Inspect a repository and produce grounded architecture documentation.   |
-| C4 documentation             | Generate practical C4-style documentation with selective useful views. |
-| Domain glossary              | Discover and document repository-specific language and terminology.     |
-| Cockburn review              | Review architectural boundaries for responsibility drift and knowledge leakage. |
-| ADR generation               | Identify architectural decisions and prepare reviewable ADR candidates. |
-| Mermaid diagrams             | Create small, readable, GitHub-compatible Mermaid diagrams.             |
-| Developer workflow utilities | Small scripts and examples that support day-to-day repository work.     |
+The important separation is:
 
-The repository is intentionally lightweight. It is currently a collection of skill definitions, documentation patterns, and examples. It is not packaged as a CLI or framework yet.
+- repository implementation can establish **what exists**
+- explicit decision sources establish **what humans decided and why**
+- repeated implementation patterns are **observed conventions**, not automatically engineering standards
+- agent instructions belong in `AGENTS.md` or the repository's instruction mechanism, not inside generated architecture documents
 
-## Why this exists
+## Skills
 
-AI-assisted development creates a new documentation problem.
+### `archdoc` — central repository documentation
 
-A human can usually tell when a generated explanation is weak, but teams need stronger guardrails when AI output becomes part of engineering workflows. Architecture documents, ADRs, and diagrams should be grounded in repository evidence. They should also make uncertainty visible.
+`archdoc` is the primary documentation skill.
 
-The skills in this repository are designed around a few principles:
+It creates or refreshes evidence-based architecture documentation under:
 
-* Prefer evidence over confident guesses.
-* Separate verified facts from inferred conclusions.
-* Keep generated documentation reviewable by humans.
-* Use small, practical outputs over large, decorative documents.
-* Make diagrams simple enough to render reliably in GitHub.
-* Treat missing information as useful information.
+```text
+docs/archdoc/
+```
+
+Canonical outputs:
+
+```text
+docs/archdoc/REPO_MAP.md
+docs/archdoc/ARCHITECTURE.md
+docs/archdoc/API_SURFACE.md    # when a meaningful interface surface exists
+docs/archdoc/OPERATIONS.md     # when operational/runtime behavior is meaningful
+```
+
+The responsibility split is deliberate:
+
+- `REPO_MAP.md`: repository orientation, important paths, entry points, commands, tests, generated paths, and observed conventions.
+- `ARCHITECTURE.md`: static architecture, boundaries, dependencies, state/data ownership, and high-level interface ownership.
+- `API_SURFACE.md`: detailed public and integration-relevant contracts.
+- `OPERATIONS.md`: runtime/build/release/deploy behavior, configuration, observability, failure handling, and verification.
+
+`REPO_MAP.md` no longer contains a domain glossary or a generic agent work guide. Use the `glossary` skill for domain terminology and `AGENTS.md` for agent instructions.
+
+### `adrgen` — architecture decisions
+
+`adrgen` supports four modes:
+
+```text
+/adrgen discover
+/adrgen generate
+/adrgen capture
+/adrgen prepare
+```
+
+The key rule is that **implementation and decision status are separate**.
+
+A repository can clearly implement a choice while the historical decision status or original rationale is unknown. In that case, `adrgen` records the implementation evidence but does not silently label the choice `ACCEPTED`.
+
+Typical output lives under:
+
+```text
+docs/adr/
+```
+
+### `mermaiddoc` — focused diagram helper
+
+`mermaiddoc` is intentionally small. It creates one focused GitHub-renderable Mermaid diagram when a document or explanation benefits from a visual.
+
+It does not own a separate documentation model and it does not create `docs/diagrams/` by default. Prefer inserting the diagram into the document that needs it.
+
+### Other skills
+
+| Skill | Purpose |
+|---|---|
+| `glossary` | Discover and document repository-specific business/domain language. |
+| `c4doc` | Generate selective C4-style architecture views when C4 is intentionally used. |
+| `cockburn-review` | Review responsibility drift, knowledge leakage, and boundary problems. |
+| `overengineering-review` | Review accidental or unjustified implementation complexity. |
+
+All skills contain Agent Skills YAML frontmatter with at least `name`, `description`, and `license`.
 
 ## Repository structure
-
-Typical layout:
 
 ```text
 ai-craftkit/
@@ -49,215 +103,119 @@ ai-craftkit/
 ├── skills/
 │   ├── README.md
 │   ├── archdoc/
-│   │   └── SKILL.md
 │   ├── adrgen/
-│   │   └── SKILL.md
-│   ├── c4doc/
-│   │   └── SKILL.md
-│   ├── cockburn-review/
-│   │   └── SKILL.md
+│   ├── mermaiddoc/
 │   ├── glossary/
-│   │   └── SKILL.md
-│   └── mermaiddoc/
-│       └── SKILL.md
+│   ├── c4doc/
+│   ├── cockburn-review/
+│   └── overengineering-review/
 ├── examples/
-│   └── ...
+│   ├── AGENTS.md
+│   └── pyjwt/
 └── scripts/
-    └── ...
 ```
 
-The exact structure may evolve as the repository grows.
+## Recommended use with `AGENTS.md`
 
-## Skills
+Generated architecture documents are most useful when an agent is told **when** to consult them rather than loading everything for every task.
 
-### `archdoc`
+A repository can use a small `AGENTS.md` such as:
 
-Creates architecture documentation from a repository inspection.
+```md
+# Agent instructions
 
-The skill guides an AI assistant to inspect files, identify system boundaries, describe components, and separate verified findings from assumptions. Its canonical outputs are `REPO_MAP.md`, `ARCHITECTURE.md`, `API_SURFACE.md`, and `OPERATIONS.md`.
+## Repository context
 
-`API_SURFACE.md` is the detailed contract document for public and integration-relevant interfaces. `ARCHITECTURE.md` stays focused on static structure and high-level interface ownership, while `OPERATIONS.md` stays focused on runtime behavior, verification, and failure handling.
+Start with `docs/archdoc/REPO_MAP.md` when you need orientation.
 
-Use it when you want an AI assistant to explain how a codebase is structured without pretending to know more than the repository proves.
+For architecture-sensitive changes, read:
+- `docs/archdoc/ARCHITECTURE.md`
+- relevant records under `docs/adr/`
 
-### `adrgen`
+For interface changes, also read:
+- `docs/archdoc/API_SURFACE.md`
 
-Generates ADR candidates from repository evidence.
+For runtime, deployment, configuration, reliability, or observability changes, also read:
+- `docs/archdoc/OPERATIONS.md`
 
-The skill helps identify decisions that are already visible in the codebase, configuration, dependencies, deployment setup, or documentation. It can prepare ADR drafts, but it should not silently mark weakly supported assumptions as accepted decisions.
+## Rules
 
-Use it when a repository contains architectural choices that should be captured, reviewed, and made explicit.
+- Treat `docs/archdoc/` as descriptive repository knowledge, not as organization-wide engineering policy.
+- Preserve accepted ADRs unless the task explicitly revisits the decision.
+- Search for an existing pattern before introducing a new one.
+- Run the repository's documented verification commands before finishing a code change.
+```
 
-### `c4doc`
+A fuller generic example is checked in at [`examples/AGENTS.md`](examples/AGENTS.md).
 
-Creates repository-specific C4 architecture documentation and Mermaid diagrams.
+## Evidence model
 
-The skill guides an AI assistant to inspect the repository, decide which C4 views are actually useful, and write reviewable Markdown documentation under `docs/c4-documentation/`. It is intentionally conservative: it should create only the diagrams and supporting files that fit the repository instead of forcing every C4 level.
+Most repository-inspection skills use these labels when uncertainty matters:
 
-Use it when you want a project-tailored C4 documentation set with evidence, confidence levels, and explicit skipped views. In Copilot Chat, you can expose it with the workspace prompt command `/c4doc`.
+- **verified** — directly supported by code, configuration, tests, schemas, commands, explicit docs, or explicit human input
+- **inferred** — strongly suggested by repository evidence but not directly confirmed
+- **uncertain** — plausible but weakly supported
+- **missing** — expected information was searched for and not found
 
-### `cockburn-review`
-
-Generates evidence-based architectural boundary reviews.
-
-The skill applies a Cockburn-inspired lens to the repository: which responsibilities appear to be in the wrong place, and which modules know details they should not need to know. Its main output is a reviewable `docs/COCKBURN_REVIEW.md` report with evidence, severity, confidence, and suggested moves.
-
-Use it when you want an AI assistant to inspect responsibility drift, knowledge leakage, boundary bypasses, semantic duplication, or change-amplifying dependencies without forcing a specific architecture style onto the codebase.
-
-### `glossary`
-
-Creates evidence-based domain glossaries from repository language.
-
-The skill guides an AI assistant to inspect documentation, tests, source, user-facing text, and schemas to extract domain terms, define them in plain language, attach evidence, and surface terminology drift or ambiguity. Its canonical output is `docs/GLOSSARY.md`.
-
-Use it when you want an AI assistant to capture candidate ubiquitous language, explain important terms, group language by context where useful, and make unresolved terminology visible instead of silently normalizing it.
-
-### `mermaiddoc`
-
-Creates practical Mermaid diagrams.
-
-The skill focuses on diagrams that are small, readable, and compatible with GitHub rendering. It includes guidance for flowcharts, sequence diagrams, component diagrams, labels, node IDs, and common Mermaid pitfalls.
-
-Use it when documentation needs a visual explanation of structure, flow, or interaction.
+The labels should be used where they add value, not mechanically on every sentence.
 
 ## How to use
 
-These skills are meant to be referenced by an AI assistant or copied into an agent setup.
-
-A typical prompt looks like this:
+Architecture documentation:
 
 ```text
-Use the archdoc skill from ai-craftkit.
-
-Inspect this repository and create a concise architecture overview.
-Mark each claim as verified, inferred, uncertain, or missing.
-Prefer repository evidence over assumptions.
+Use the archdoc skill.
+Inspect this repository and create or refresh its architecture documentation.
 ```
 
-For ADR discovery:
+ADR discovery:
 
 ```text
-Use the adrgen skill from ai-craftkit.
-
-Inspect this repository and identify architectural decision candidates.
-Create reviewable ADR drafts only where the repository provides enough evidence.
-Mark weak findings as candidates, not accepted decisions.
+Use the adrgen skill in discover mode.
+Identify architecture-significant choices that are implemented but not adequately documented.
+Do not invent historical rationale.
 ```
 
-For diagrams:
+Decision capture:
 
 ```text
-Use the mermaiddoc skill from ai-craftkit.
-
-Create a GitHub-compatible Mermaid diagram that shows the main components
-and the data flow between them. Keep the diagram small and readable.
+Use adrgen capture with these meeting notes.
+Create an ADR that records only the decision, alternatives, and rationale supported by the notes.
 ```
 
-For C4 documentation:
+A focused diagram:
 
 ```text
-Use the c4doc skill from ai-craftkit.
-
-Inspect this repository and generate only the useful C4 architecture
-documentation under docs/c4-documentation. Mark inferred elements clearly
-and explain which views were skipped.
+Use mermaiddoc to create a sequence diagram for the token refresh flow and insert it into the relevant architecture document.
 ```
 
-For architectural boundary review:
+## Design principles
 
-```text
-Use the cockburn-review skill from ai-craftkit.
+The skills should:
 
-Inspect this repository and produce an evidence-based boundary review.
-Focus on misplaced responsibilities, knowledge leakage, and changes that
-will become unnecessarily hard.
-```
+- prefer evidence over confident guesses
+- separate current implementation from historical decision intent
+- keep generated artifacts concise and maintainable
+- make important uncertainty visible
+- avoid duplicating the same facts across several documents
+- preserve useful human-authored material during updates
+- avoid reading or copying secrets
+- use deterministic validation where it is already available instead of relying on prose alone
 
-For domain terminology:
+## Examples
 
-```text
-Use the glossary skill from ai-craftkit.
-
-Inspect this repository and create an evidence-based glossary in docs/GLOSSARY.md.
-Focus on domain-specific language, mark inferred meanings clearly, and
-surface any competing or ambiguous terminology.
-```
-
-## Example use cases
-
-This repository is useful for:
-
-* creating a first architecture overview of an unfamiliar repository
-* generating selective C4 documentation for an existing repository
-* extracting candidate ubiquitous language from an existing codebase
-* reviewing architectural boundaries for responsibility drift and knowledge leakage
-* documenting the main components of an application
-* generating onboarding material for developers
-* preparing ADR candidates from existing code
-* turning repository structure into Mermaid diagrams
-* creating consistent documentation prompts for AI-assisted workflows
-* making AI-generated documentation easier to review
-
-## Output style
-
-The skills favor practical engineering documentation.
-
-Good output should be:
-
-* specific
-* traceable to repository evidence
-* explicit about uncertainty
-* readable by developers and architects
-* small enough to review
-* easy to maintain
-
-Poor output should be rejected when it is:
-
-* generic
-* speculative
-* too broad
-* visually overdesigned
-* disconnected from the repository
-* missing clear evidence
+The `examples/pyjwt/` directory contains checked-in examples produced by earlier iterations of the skills. Examples are useful for understanding the style, but the current `SKILL.md` files and templates are normative when behavior has changed.
 
 ## Status
 
-This repository is early and experimental.
+This repository is experimental and evolving. The skills are intended to be directly useful in coding-agent workflows today, but generated documentation still requires human review.
 
-The current goal is to collect and refine reusable skill definitions for AI-assisted software engineering work. The repository is useful as a prompt and documentation toolkit today, but it is not yet a complete product.
-
-Planned improvements include:
-
-* more complete examples
-* before-and-after documentation samples
-* stronger usage documentation
-* validation checklists
-* possible packaging for easier reuse
-* more skills for common engineering workflows
-
-## Limitations
-
-These skills do not replace architectural judgment.
-
-They help structure AI-assisted work, but the generated output still needs human review. A repository may also lack enough evidence to support a confident architecture document or ADR. In that case, the right result is to state what is missing.
-
-The skills are especially useful when teams want AI support without losing engineering discipline.
+A repository may not contain enough evidence to support a confident architecture claim or ADR. In that case, the correct result is to state what is missing rather than fill the gap with plausible text.
 
 ## Contributing
 
-Contributions are welcome when they improve practical usefulness.
-
-Good contributions include:
-
-* clearer skill instructions
-* better examples
-* realistic documentation outputs
-* safer evidence handling
-* Mermaid diagrams that render reliably
-* workflow scripts with clear usage instructions
-
-Please avoid adding generic prompts. The goal is reusable engineering guidance that produces reviewable output.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Contributions should keep skills small, task-oriented, evidence-based, and internally consistent with their templates and README files.
 
 ## License
 
-See the repository license for usage terms.
+See [`LICENSE`](LICENSE).

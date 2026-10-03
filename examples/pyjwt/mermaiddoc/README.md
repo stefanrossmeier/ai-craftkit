@@ -1,5 +1,7 @@
 # PyJWT example
 
+> **Historical snapshot:** this checked-in example predates the simplified `mermaiddoc` helper. The current skill prefers inserting a focused diagram into the document that needs it and does not create `docs/diagrams/` by default.
+
 This folder contains example documentation generated for the public `pyjwt` repository using the `mermaiddoc` skill from `ai-craftkit`.
 
 The purpose of this example is to show how a small, focused prompt can produce useful explanatory diagrams and Markdown documentation for an existing codebase.
