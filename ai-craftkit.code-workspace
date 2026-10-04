@@ -1,10 +1,22 @@
 {
   "folders": [
     {
+      "path": ".github"
+    },
+    {
+      "path": "docs"
+    },
+    {
+      "path": "examples"
+    },
+    {
       "path": "scripts"
     },
     {
       "path": "skills"
+    },
+    {
+      "path": "../pyjwt"
     }
   ],
   "settings": {}
