@@ -51,9 +51,11 @@ docs/archdoc/OPERATIONS.md     # when operational/runtime behavior is meaningful
 The responsibility split is deliberate:
 
 - `REPO_MAP.md`: repository orientation, important paths, entry points, commands, tests, generated paths, and observed conventions.
-- `ARCHITECTURE.md`: architecture drivers, context, solution strategy, major building blocks, dependencies, state/data ownership, cross-cutting concepts, representative interactions, decisions, and risks.
+- `ARCHITECTURE.md`: system boundary, architecture drivers/quality goals, hard constraints, solution strategy, major building blocks, dependency direction, state/data ownership, cross-cutting concepts, representative interactions, invariants, decisions, and risks.
 - `API_SURFACE.md`: detailed public and integration-relevant contracts.
 - `OPERATIONS.md`: runtime/build/release/deploy behavior, configuration, observability, failure handling, and verification.
+
+`ARCHITECTURE.md` uses a completeness gate rather than a requirement to keep every template heading: each major architecture perspective must be documented, cross-referenced, marked not applicable, or recorded as missing. This keeps small repositories concise without allowing system context, state ownership, invariants, or other material concerns to disappear silently.
 
 `REPO_MAP.md` no longer contains a domain glossary or a generic agent work guide. Use the `glossary` skill for domain terminology and `AGENTS.md` for agent instructions.
 

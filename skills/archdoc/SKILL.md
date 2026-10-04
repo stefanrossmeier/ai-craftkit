@@ -33,7 +33,7 @@ Create `API_SURFACE.md` only when there is a public or integration-relevant cont
 
 Create `OPERATIONS.md` when there is meaningful execution, packaging, runtime, deployment, observability, release, debugging, or recovery behavior. Do not create an empty operations document merely to complete a set.
 
-Use the bundled templates as starting shapes, not as mandatory checklists:
+Use the bundled templates as starting shapes:
 
 ```text
 skills/archdoc/templates/REPO_MAP.template.md
@@ -42,7 +42,7 @@ skills/archdoc/templates/API_SURFACE.template.md
 skills/archdoc/templates/OPERATIONS.template.md
 ```
 
-Remove irrelevant sections and all unresolved placeholders.
+Adapt headings to the repository and remove unresolved placeholders. For `ARCHITECTURE.md`, the template also defines a **coverage model**: a heading may be omitted, but the underlying architecture concern must first be accounted for as documented, cross-referenced, not applicable, or missing. Do not silently drop a material concern merely to make the file shorter.
 
 ## Document Responsibilities
 
@@ -68,18 +68,46 @@ Do **not** turn `REPO_MAP.md` into an `AGENTS.md` replacement. It may help navig
 
 ### `ARCHITECTURE.md`
 
-`ARCHITECTURE.md` is the main explanation of how the repository is shaped and why a maintainer should care about that shape. Keep it concise, but do not reduce it to a component inventory. A useful architecture document should answer these questions when the repository provides evidence:
+`ARCHITECTURE.md` is the main explanation of how the repository is shaped and which architectural properties a maintainer must understand before changing it. Keep it concise, but do not reduce it to a component inventory.
 
-1. **Scope and context** — what does this repository own, who/what uses it, and what lies outside its boundary?
-2. **Architecture drivers** — which explicit requirements, quality goals, or hard constraints materially shape the architecture?
-3. **Solution strategy** — what top-level decomposition and mechanisms organize the implementation?
-4. **Building blocks and dependencies** — what are the major components, responsibilities, dependency directions, and owned state/data?
-5. **Cross-cutting concepts** — how are architecture-significant concerns such as security/trust, validation, errors, consistency, concurrency, caching, configuration boundaries, or extensibility handled when relevant?
-6. **Interactions, interfaces, decisions, and risks** — which representative flows and boundaries matter, which ADRs explain decisions, and which important risks or unknowns remain?
+Account for these architecture perspectives:
 
-These are content responsibilities, not a demand for long prose. Omit irrelevant subsections, but do not omit a material architecture topic merely to keep the file short. If an expected driver, rationale, or quality goal cannot be established, record it as missing instead of inventing it.
+1. **Purpose, scope, and system boundary** — what does this repository own, who/what uses it, and what lies outside its boundary?
+2. **Architecture drivers and quality goals** — which explicit security, reliability, compatibility, performance, portability, maintainability, or other requirements materially shape the architecture?
+3. **Hard constraints** — which imposed platform, protocol, dependency, regulatory, runtime, or compatibility limits constrain the solution?
+4. **Solution strategy** — what top-level decomposition and mechanisms organize the implementation?
+5. **Building blocks and dependency direction** — what are the major components, responsibilities, and important dependency/boundary rules?
+6. **Data and state ownership** — what state exists, who owns it, where it lives, and which state is caller/external/process-local when applicable?
+7. **Cross-cutting concepts** — how are architecture-significant concerns such as security/trust, validation, errors, serialization, consistency, concurrency, caching, configuration boundaries, or extensibility handled when relevant?
+8. **Representative interactions and interface ownership** — which flows and boundaries are necessary to understand collaboration between the building blocks?
+9. **Architecture-relevant constraints and invariants** — which evidenced properties must remain true for the current architecture/contracts to remain valid?
+10. **Decisions, risks, and unknowns** — which ADRs explain deliberate choices, which rationale is missing, and which architecture-significant risks or unknowns remain?
 
-Detailed contracts belong in `API_SURFACE.md`. Deployment topology, startup/run procedures, observability, operational failure handling, and recovery belong in `OPERATIONS.md`, except where a short reference is necessary to understand an architecture-significant boundary or flow.
+Do not conflate the perspectives:
+
+- A **driver/quality goal** is a property the system is expected to achieve or preserve.
+- A **hard constraint** is an externally imposed limit on the solution space.
+- An **architectural consequence** is how the current design responds to a driver or constraint.
+- Implementation can establish the consequence; only explicit human-owned sources establish historical rationale or acceptance.
+
+### Architecture completeness gate
+
+Before finishing `ARCHITECTURE.md`, account for each perspective above as one of:
+
+- **documented** — relevant evidence exists and the document explains it
+- **cross-referenced** — another canonical archdoc file owns the detail and `ARCHITECTURE.md` links to it
+- **not applicable** — the concern genuinely does not apply to this repository type or scope
+- **missing** — the concern is relevant, but expected evidence was searched for and not found
+
+This is a generation-time coverage check, not a mandatory table to publish. A short architecture document is fine; a silently incomplete one is not. `not applicable` must not be used merely because evidence is difficult to find.
+
+For **system context**, separate external actors/systems from internal components. A library's host application is outside the library boundary even though it shares a process; a remote service is external; ordinary in-process package dependencies normally belong in constraints/building blocks rather than being modeled as external systems.
+
+For **data and state ownership**, explicitly say when a repository is stateless. Distinguish caller-owned or externally authoritative data from process-local caches/configuration and durable repository-owned state.
+
+For **invariants**, require concrete evidence from code, tests, schemas, contracts, ADRs, or explicit documentation. An enforced contract or security property may be architecture-relevant even without a recovered historical ADR; a recurring coding style is not automatically an invariant.
+
+Detailed contracts belong in `API_SURFACE.md`. Deployment topology, startup/run procedures, observability, operational failure handling, and recovery belong in `OPERATIONS.md`, except where a short reference is necessary to understand an architecture-significant boundary, state model, invariant, or flow.
 
 ### `API_SURFACE.md`
 
@@ -157,12 +185,14 @@ Use the smallest inspection set that supports the requested scope. Do not read t
    - main source/test directories
 
 3. **Trace important structure and architecture drivers**
-   - entry points and public exports
+   - entry points, public exports, primary consumers/actors, and the explicit repository/system boundary
+   - directly connected external systems and the protocols/boundaries between them
    - module/package boundaries and dependency direction
-   - explicit requirements, quality goals, compatibility/security constraints, and ADRs
-   - data/state ownership, persistence, and external integrations
+   - explicit quality goals/requirements separately from hard platform/protocol/dependency constraints
+   - ADRs and other human-owned rationale sources
+   - caller-owned, external, transient/process-local, cached, and durable state/data ownership
    - architecture-significant cross-cutting mechanisms
-   - representative tests that establish boundaries or invariants
+   - representative tests that establish contracts, boundary rules, or invariants
 
 4. **Inspect runtime/contract evidence when relevant**
    - routes, schemas, event contracts, CLI registration
@@ -199,12 +229,13 @@ Environment variable **names** and secret **locations** may be documented. Secre
 1. Be concise. Prefer a useful summary plus precise links over exhaustive inventories.
 2. Preserve human-authored information when updating an existing file unless it is demonstrably stale or wrong.
 3. Do not silently overwrite explicit human decisions with inferred repository behavior.
-4. Remove template sections that do not apply.
+4. Remove template sections only after the underlying concern has been accounted for by the architecture completeness gate.
 5. Keep generated tables bounded; list representative or important entries and link to canonical sources for exhaustive detail.
 6. Avoid repeating the same facts in multiple archdoc files. Put each fact in the document that owns it and cross-reference when useful.
 7. Do not duplicate a domain glossary, ADR rationale, engineering standards, or agent workflow instructions inside archdoc.
 8. If repository evidence contradicts existing documentation, report the conflict explicitly instead of choosing silently.
-9. Mark review scope and source revision when available so future readers can judge staleness.
+9. Mark review scope, canonical source repository, and source revision when available so future readers can judge staleness and inspect the exact evidence snapshot.
+10. When the repository is on GitHub and an exact revision is known, prefer revision-pinned GitHub permalinks for source evidence; keep links between generated archdoc files relative.
 
 ## Provenance
 
@@ -215,11 +246,22 @@ Review Scope: [full | targeted area | delta]
 Doc Status: [MAINTAINED | DRAFT | NEEDS REVIEW]
 Last Updated: [YYYY-MM-DDTHH:MM:SSZ]
 Updated By: [human | agent | human+agent]
+Source Repository: [canonical repository URL | unavailable]
 Source Revision: [git SHA | unavailable]
 Source Basis: [short list of inspected evidence]
 ```
 
 Do not fabricate a revision or timestamp. Use `unavailable` when it cannot be established.
+
+When a canonical GitHub repository URL and exact commit SHA are available, make the provenance and evidence reproducible:
+
+- link `Source Repository` to the repository tree at that SHA (`.../tree/<sha>`)
+- link `Source Revision` to the commit (`.../commit/<sha>`)
+- link source files to `.../blob/<sha>/<path>` and source directories to `.../tree/<sha>/<path>`
+- do not use a moving branch such as `main` or `master` for evidence links when the exact SHA is known
+- keep cross-links among `REPO_MAP.md`, `ARCHITECTURE.md`, `API_SURFACE.md`, `OPERATIONS.md`, and local ADRs relative
+
+For non-GitHub repositories or when a canonical remote cannot be established safely, use repository-relative source links or plain paths. Never copy credentials, access tokens, or credential-bearing remote URLs into documentation.
 
 ## Diagrams
 

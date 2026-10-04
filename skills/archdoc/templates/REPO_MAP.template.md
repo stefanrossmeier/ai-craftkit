@@ -4,6 +4,7 @@ Review Scope: [full | targeted area | delta]
 Doc Status: [MAINTAINED | DRAFT | NEEDS REVIEW]
 Last Updated: [YYYY-MM-DDTHH:MM:SSZ]
 Updated By: [human | agent | human+agent]
+Source Repository: [canonical repository URL | unavailable]
 Source Revision: [git SHA | unavailable]
 Source Basis: [README, manifests, source tree, tests, commands, other]
 

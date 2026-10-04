@@ -1,12 +1,14 @@
-# PyJWT Architecture Documentation Example
+# PyJWT Archdoc Example
 
-This folder shows the output of applying the `archdoc` skill to the PyJWT repository. It demonstrates a concise, evidence-based architecture documentation set for a Python library rather than a deployed service.
+This folder is an example output of the `/archdoc` skill for the PyJWT Python library. It is a documentation snapshot, not part of PyJWT's runtime or package source.
 
-Read the documents in this order:
+The documents were created by inspecting PyJWT's README, package and verification configuration, public `jwt` exports, implementation modules, tests, and CI/release workflows. Claims are marked by evidence status where useful, and the source repository and exact commit are recorded at the top of every document.
 
-1. [REPO_MAP.md](REPO_MAP.md) orients readers to the repository layout, key modules, and verification commands.
-2. [ARCHITECTURE.md](ARCHITECTURE.md) explains architecture drivers, context, solution strategy, component responsibilities, dependencies, state ownership, cross-cutting concepts, and key processing paths.
-3. [API_SURFACE.md](API_SURFACE.md) describes the public `jwt` Python-library contract, validation behavior, and compatibility signals.
-4. [OPERATIONS.md](OPERATIONS.md) records installation, local verification, CI, documentation builds, and package-release behavior.
+Read the files in this order:
 
-Each document includes a provenance block and marks material statements as **verified**, **inferred**, or **missing** where repository evidence is incomplete. The documents are a snapshot of the reviewed PyJWT revision and its library, packaging, and JWKS network boundaries; they are not a substitute for source code, the public API reference, or live operational observation.
+1. [REPO_MAP.md](REPO_MAP.md) for repository navigation and commands.
+2. [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries, modules, state, and invariants.
+3. [API_SURFACE.md](API_SURFACE.md) for the public Python and JWKS-client contracts.
+4. [OPERATIONS.md](OPERATIONS.md) for verification, release, and runtime behavior.
+
+To create a similar set for another repository, run `/archdoc` against that repository. The skill writes `REPO_MAP.md` and `ARCHITECTURE.md` always, and adds API and operations documents when supported by repository evidence.

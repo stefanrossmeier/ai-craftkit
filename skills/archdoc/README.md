@@ -17,7 +17,7 @@ docs/archdoc/
 Canonical outputs:
 
 - `docs/archdoc/REPO_MAP.md` — repository orientation, important paths, entry points, commands, tests, and observed conventions.
-- `docs/archdoc/ARCHITECTURE.md` — architecture drivers, context, solution strategy, major building blocks, dependencies, data/state ownership, cross-cutting concepts, representative interactions, decisions, and risks.
+- `docs/archdoc/ARCHITECTURE.md` — system boundary, architecture drivers/quality goals, hard constraints, solution strategy, major building blocks, dependency direction, data/state ownership, cross-cutting concepts, representative interactions, invariants, decisions, and risks.
 - `docs/archdoc/API_SURFACE.md` — detailed public and integration-relevant contracts, when such a surface exists.
 - `docs/archdoc/OPERATIONS.md` — runtime, build/release/deploy, verification, observability, and failure handling, when operational behavior is meaningful.
 
@@ -33,7 +33,10 @@ Canonical outputs:
 - avoid duplicating the same detail across the four documents
 - preserve useful human-authored material during updates
 - cover the essential architecture story without turning the document into an exhaustive inventory
+- use the architecture completeness gate so relevant perspectives are documented, cross-referenced, marked not applicable, or recorded as missing rather than silently omitted
+- keep architecture drivers/quality goals separate from imposed hard constraints
 - use optional diagrams only when they improve understanding, and keep Mermaid syntax conservative and GitHub-renderable
+- record the canonical source repository and exact revision when available; on GitHub, prefer SHA-pinned source/evidence permalinks over moving branch or fragile copied relative links
 - avoid exhaustive generated inventories when a canonical spec already exists
 
 ## Recommended Workflow

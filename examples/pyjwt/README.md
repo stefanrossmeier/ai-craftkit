@@ -6,11 +6,9 @@ The goal of this example set is to show the current output shape of the skills a
 
 ## Source repository
 
-This example is based on the public PyJWT repository:
+This example is based on the public PyJWT repository at a fixed source revision:
 
-```text
-https://github.com/jpadilla/pyjwt
-```
+[jpadilla/pyjwt at `7144e4534c34`](https://github.com/jpadilla/pyjwt/tree/7144e4534c34810f4525dc4578a32addd8212cff) ([commit](https://github.com/jpadilla/pyjwt/commit/7144e4534c34810f4525dc4578a32addd8212cff))
 
 PyJWT is a Python library for working with JSON Web Tokens. It is a useful example target because the repository is small enough to inspect, but still contains meaningful structure around JWT decoding, JWS handling, claim validation, algorithms, exceptions, tests, documentation, and packaging.
 
@@ -79,7 +77,7 @@ cockburn-review/
 ### Mermaid documentation
 
 ```text
-/mermaiddoc on the pyjwt repository, create me a md file and explanation for decode. And another md file for explanation of validation.
+/mermaiddoc In the pyjwt repo describe the encode workflow with a new md file. Also describe the decode workflow with a separate md file.
 ```
 
 Generated output:
@@ -149,11 +147,7 @@ The examples are included to demonstrate the behavior of the current `ai-craftki
 
 ## License and attribution
 
-This example is based on the public PyJWT repository:
-
-```text
-https://github.com/jpadilla/pyjwt
-```
+This example is based on the public PyJWT repository snapshot [jpadilla/pyjwt at `7144e4534c34`](https://github.com/jpadilla/pyjwt/tree/7144e4534c34810f4525dc4578a32addd8212cff).
 
 PyJWT is licensed under the MIT License. A copy of the PyJWT license is included in this folder as `LICENSE-PyJWT`.
 

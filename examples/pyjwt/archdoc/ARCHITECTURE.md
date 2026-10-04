@@ -1,70 +1,82 @@
-# PyJWT Architecture
+# Architecture
 
-> Review Scope: full static repository review
-> Doc Status: MAINTAINED
-> Last Updated: 2026-10-04T08:21:17Z
-> Updated By: agent
-> Source Revision: 7144e4534c34810f4525dc4578a32addd8212cff
-> Source Basis: `pyproject.toml`, `jwt/`, `tests/`, `docs/`, and `.github/workflows/`
+Review Scope: full repository snapshot
+Doc Status: MAINTAINED
+Last Updated: 2026-10-04T09:21:37Z
+Updated By: agent
+Source Repository: [jpadilla/pyjwt](https://github.com/jpadilla/pyjwt/tree/7144e4534c34810f4525dc4578a32addd8212cff)
+Source Revision: [7144e4534c34810f4525dc4578a32addd8212cff](https://github.com/jpadilla/pyjwt/commit/7144e4534c34810f4525dc4578a32addd8212cff)
+Source Basis: package metadata, public API, implementation, tests, usage/reference docs, CI configuration
 
-## Scope And Context
+Related docs: [REPO_MAP.md](REPO_MAP.md), [API_SURFACE.md](API_SURFACE.md), and [OPERATIONS.md](OPERATIONS.md).
 
-**verified:** PyJWT owns creation and validation of compact JSON Web Tokens, JWS processing, JWK/JWKS interpretation, and optional HTTP(S) retrieval of signing keys. The package exposes this behavior to Python callers through the `jwt` module ([jwt/__init__.py](../../jwt/__init__.py)). It does not own identity issuance, key lifecycle management, an authorization server, token storage, or a network service.
+## Purpose and Scope
 
-## Drivers And Constraints
+PyJWT is an in-process Python library for creating and consuming JWTs. It owns compact JWT serialization/parsing, JWS signing and signature verification, JWT registered-claim validation, JWK conversion, and optional retrieval of signing keys from a remote JWKS endpoint.
 
-- **verified:** the project describes itself as an RFC 7519 implementation and documents its `encode`/`decode` use ([README.rst](../../README.rst)).
-- **verified:** it supports Python 3.9 through 3.14 in package metadata and CI; the CI matrix also includes PyPy 3.9 through 3.11 ([pyproject.toml](../../pyproject.toml), [.github/workflows/main.yml](../../.github/workflows/main.yml)).
-- **verified:** asymmetric cryptography is optional through the `crypto` extra, while HMAC algorithms remain available without it ([pyproject.toml](../../pyproject.toml), [jwt/algorithms.py](../../jwt/algorithms.py)).
-- **missing:** no ADR or explicit repository rationale was found for the present module decomposition or public compatibility strategy.
+Host applications are outside the boundary. They own token issuance policy, key material and secret storage, accepted algorithms, audience/issuer expectations, token persistence, authentication/authorization decisions, and any network endpoint that serves a JWKS.
 
-## Solution Strategy
+## Architecture Drivers and Constraints
 
-The library layers JWT-specific behavior over a JWS engine. `PyJWT` converts JSON payloads and validates registered claims; `PyJWS` serializes or parses compact JWS segments and delegates signing/verification to algorithm implementations. JWK objects bind key data to an algorithm; `PyJWKClient` optionally retrieves matching signing keys from an HTTP(S) JWKS endpoint.
+| Concern | Evidence | Architectural consequence | Status |
+|---|---|---|---|
+| Token integrity and safe verification | [`jwt/api_jwt.py`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/api_jwt.py) warns callers to configure allowed algorithms independently of token input; [`jwt/api_jws.py`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/api_jws.py) requires an allowed-algorithms argument when signature verification uses a non-JWK key | Decode first parses JWS, then verifies against the caller's allow-list, then validates claims | verified |
+| JWT/JWS protocol support | [README](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/README.rst) identifies RFC 7519; JWS compact processing is implemented in [`jwt/api_jws.py`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/api_jws.py) | JSON claim objects are serialized into compact signed tokens and decoded through JWS before claim checks | verified |
+| Python/runtime compatibility | [`pyproject.toml`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/pyproject.toml) requires Python >=3.9; CI runs CPython 3.9-3.14 and PyPy variants | Code and typing retain Python 3.9 compatibility paths | verified |
+| Optional asymmetric cryptography | [`pyproject.toml`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/pyproject.toml) defines the `crypto` extra; [`jwt/algorithms.py`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/algorithms.py) conditionally imports `cryptography` | HMAC is always available; RSA, EC, PSS, and EdDSA algorithms appear only when `cryptography` is installed | verified |
 
-```mermaid
-flowchart LR
-    Caller["Python caller"] --> Facade["jwt public facade"]
-    Facade --> JWT["PyJWT: JSON claims"]
-    JWT --> JWS["PyJWS: compact JWS"]
-    JWS --> Algorithms["Algorithm implementations"]
-    JWT --> JWK["PyJWK / PyJWKSet"]
-    Caller --> JWKS["PyJWKClient"]
-    JWKS --> JWK
-    JWKS --> Cache["JWKSetCache"]
-    JWKS --> Endpoint["Remote HTTP(S) JWKS endpoint"]
-    Algorithms --> Crypto["Optional cryptography package"]
-```
+No human-owned source establishing the historical rationale or priority of these concerns was found; the implementation establishes consequences, not intent.
 
-## Building Blocks
+## Context and Solution Strategy
 
-| Component | Responsibility | Dependencies and state |
-| --- | --- | --- |
-| `jwt.__init__` | Stable top-level re-exports and package version. | Depends on API, JWK, JWKS, exception, and warning modules. |
-| `PyJWT` | Encodes dictionary payloads; decodes JSON payloads; validates `exp`, `nbf`, `iat`, `aud`, `iss`, `sub`, `jti`, and required claims. | Owns default validation options and composes `PyJWS` ([jwt/api_jwt.py](../../jwt/api_jwt.py)). |
-| `PyJWS` | Builds/parses compact serialization; maintains a per-instance algorithm registry and verifies signatures. | Uses `Algorithm` implementations and `PyJWK` ([jwt/api_jws.py](../../jwt/api_jws.py)). |
-| Algorithms | Normalizes keys, signs, verifies, and translates JWK material. | HMAC uses the standard library; RSA, EC, PS, and EdDSA require `cryptography` ([jwt/algorithms.py](../../jwt/algorithms.py)). |
-| JWK model | Converts JWK/JWK Set data into usable key objects and chooses or validates algorithms. | Rejects unusable key material; depends on algorithm registry ([jwt/api_jwk.py](../../jwt/api_jwk.py)). |
-| JWKS client/cache | Fetches a remote JWKS, filters signing keys, matches `kid`, and caches sets/optionally individual keys. | Uses `urllib.request`, in-memory cache, supplied headers/timeout/SSL context ([jwt/jwks_client.py](../../jwt/jwks_client.py)). |
+| Actor / external system | Relationship | Boundary | Status |
+|---|---|---|---|
+| Host Python application | Calls the public `jwt` library API and supplies key/claim policy | in-process Python API | verified |
+| JWKS endpoint, when used | Serves JSON Web Key Sets to `PyJWKClient` | outbound HTTP(S) via `urllib.request` | verified |
+| `cryptography`, when installed | Provides asymmetric-key primitives | optional in-process package dependency | verified |
 
-## Cross-Cutting Security And Failure Handling
+The library presents a small package facade over a layered implementation: `PyJWT` handles JSON JWT payloads and claim checks; it delegates compact signing/parsing to `PyJWS`; `PyJWS` resolves concrete `Algorithm` implementations. JWK models bind key metadata and algorithms, while `PyJWKClient` fetches and selects remote public signing keys.
 
-- **verified:** signature verification defaults to enabled. When verification is enabled, callers must supply an algorithm allow-list unless a `PyJWK` supplies the bound algorithm ([jwt/api_jws.py](../../jwt/api_jws.py)).
-- **verified:** high-level decode validates standard claims by default; options can disable individual checks, and failures use the public exception hierarchy ([jwt/api_jwt.py](../../jwt/api_jwt.py), [jwt/exceptions.py](../../jwt/exceptions.py)).
-- **verified:** `PyJWK` binds key data to an algorithm, and JWS verification rejects a token whose advertised algorithm differs from that binding ([jwt/api_jwk.py](../../jwt/api_jwk.py), [jwt/api_jws.py](../../jwt/api_jws.py)).
-- **verified:** the JWKS client allows only `http` and `https` URIs, supports caller-supplied request headers, timeout, and SSL context, and preserves a previously cached set when a refresh fails ([jwt/jwks_client.py](../../jwt/jwks_client.py), [tests/test_jwks_client.py](../../tests/test_jwks_client.py)).
-- **verified:** insufficient key length emits `InsecureKeyLengthWarning` by default and can become `InvalidKeyError` when the corresponding option is enabled ([jwt/api_jws.py](../../jwt/api_jws.py)).
+## Major Building Blocks and Dependency Direction
 
-## Representative Flows
+| Component | Responsibility | Depends on | Owned state/data | Status |
+|---|---|---|---|---|
+| `jwt.__init__` | Public exports and convenience functions | API modules, JWK client, exceptions | process-global convenience `PyJWT`/`PyJWS` objects created by module APIs | verified |
+| `api_jwt.PyJWT` | Payload JSON conversion and registered-claim validation | `PyJWS`, exceptions | per-instance validation options | verified |
+| `api_jws.PyJWS` | JWS compact representation, headers, algorithm allow-list, signing/verification | algorithms, JWKs, utilities | per-instance algorithm registry and signature options | verified |
+| `algorithms` | HMAC and optional asymmetric algorithm implementations | standard library; optional `cryptography` | algorithm objects and key preparation rules | verified |
+| `api_jwk` | Parse/represent JWKs and JWK sets | algorithms, utilities | JWK metadata and prepared keys | verified |
+| `jwks_client.PyJWKClient` | Fetch, cache, select remote signing keys | `urllib`, JWK models, JWT header parsing | optional in-memory JWKS and LRU key caches | verified |
 
-**Encoding:** `jwt.encode` delegates to `PyJWT.encode`, which checks the payload shape, converts registered datetime claims, JSON-encodes the payload, then asks `PyJWS` and the selected algorithm to produce a compact signed token.
+Dependency direction is `PyJWT -> PyJWS -> Algorithm` for token handling. JWK and JWKS-client paths feed a prepared `PyJWK` into verification; the client does not perform authorization or final token verification itself.
 
-**Decoding:** `jwt.decode` delegates to `PyJWT.decode_complete`; `PyJWS` parses and validates the protected header and signature before `PyJWT` JSON-decodes the payload and evaluates configured claims. The public facade test exercises this end-to-end path ([tests/test_jwt.py](../../tests/test_jwt.py)).
+## Data and State Ownership
 
-**Remote-key decoding:** an application can use `PyJWKClient.get_signing_key_from_jwt` to inspect an unverified header only to select a `kid`, retrieve the matching key from the configured JWKS endpoint, then pass that key and an application-controlled algorithm allow-list to `jwt.decode` ([jwt/jwks_client.py](../../jwt/jwks_client.py), [tests/test_jwks_client.py](../../tests/test_jwks_client.py)).
+The library has no durable repository-owned state and does not persist tokens or keys. Token bytes, claims, supplied keys, accepted algorithms, and authorization interpretation are caller-owned. A remote JWKS endpoint is authoritative for its own key-set response.
 
-## Risks And Unknowns
+Process-local state is limited to `PyJWT`/`PyJWS` options and algorithm registries, plus `PyJWKClient` caches. The JWKS-set cache defaults to 300 seconds; its optional per-key LRU cache defaults to disabled and has no time expiry. See [OPERATIONS.md](OPERATIONS.md) for effects and failure handling.
 
-- **verified:** callers control keys, allowed algorithms, validation options, endpoint URLs, and supplied headers; misuse of those inputs remains outside this library's control.
-- **inferred:** `PyJWKClient` caches are process-local and not designed as a shared cache; only in-memory classes are present.
-- **missing:** no static evidence of telemetry, metrics, structured logging, rate limiting, or a documented key-rotation operational policy was found.
+## Cross-Cutting Concepts and Invariants
+
+| Concept / invariant | Evidence | Architectural effect | Status |
+|---|---|---|---|
+| Verified decode requires an algorithm allow-list for ordinary keys | [`jwt/api_jws.py`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/api_jws.py); [`tests/test_api_jws.py`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/tests/test_api_jws.py) | Prevents token header selection from defining the accepted verification algorithm set | verified |
+| Claim validation defaults on with signature validation | [`PyJWT._get_default_options`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/api_jwt.py) | `exp`, `nbf`, `iat`, `aud`, `iss`, `sub`, and `jti` checks are enabled unless options alter them | verified |
+| Unverified headers and claims are explicitly exposed but not trusted | [`docs/usage.rst`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/docs/usage.rst) | Consumers must treat the returned unverified material as untrusted until verification | verified |
+| JWKS URLs are restricted to HTTP(S) | [`PyJWKClient.__init__`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/jwks_client.py) | Prevents the JWKS client from using `file:`, `ftp:`, or `data:` URI handlers | verified |
+| Extensions are per-instance algorithm registrations | [`PyJWS.register_algorithm`](https://github.com/jpadilla/pyjwt/blob/7144e4534c34810f4525dc4578a32addd8212cff/jwt/api_jws.py) and tests | Custom algorithm registration mutates the selected `PyJWS` instance only | verified |
+
+## Representative Interaction
+
+### Verified JWT decode
+
+1. The host application calls `jwt.decode` or `PyJWT.decode` with a token, key, and allowed algorithms.
+2. `PyJWT.decode_complete` delegates compact token loading and signature verification to `PyJWS`.
+3. `PyJWT` decodes the payload as a JSON object and validates configured registered claims using the current UTC time and supplied audience, issuer, subject, and leeway.
+4. The library returns claims or raises a typed exception. Detailed contract behavior is in [API_SURFACE.md](API_SURFACE.md).
+
+## Decisions, Risks, and Unknowns
+
+- No ADRs were found in this revision. Rationale for the global convenience objects, algorithm registry shape, cache defaults, and HTTP-client choice is **missing**.
+- `PyJWKClient` is synchronous and uses `urllib`; no async client contract is evidenced.
+- The repository does not provide a service deployment topology or application observability surface; it is a library, and host applications own those concerns.
