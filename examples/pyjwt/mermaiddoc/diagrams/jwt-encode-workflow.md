@@ -16,14 +16,14 @@ Diagram type: flowchart LR
 
 ```mermaid
 flowchart LR
-    Caller[Caller] --> Facade[jwt.encode]
-    Facade --> Claims[Copy payload and normalize exp iat nbf]
-    Claims --> Iss[Check iss type]
-    Iss --> Payload[JSON-encode payload bytes]
-    Payload --> Header[Build header and segments]
-    Header --> Alg[Resolve alg and prepare key]
-    Alg --> Sign[Sign input and append signature]
-    Sign --> Token[Return compact JWT]
+    Caller["Caller"] --> Facade["jwt.encode"]
+    Facade --> Claims["Copy payload and normalize exp iat nbf"]
+    Claims --> Iss["Check iss type"]
+    Iss --> Payload["JSON-encode payload bytes"]
+    Payload --> Header["Build header and segments"]
+    Header --> Alg["Resolve alg and prepare key"]
+    Alg --> Sign["Sign input and append signature"]
+    Sign --> Token["Return compact JWT"]
 ```
 
 Notes:

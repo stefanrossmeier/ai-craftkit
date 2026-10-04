@@ -68,20 +68,18 @@ Do **not** turn `REPO_MAP.md` into an `AGENTS.md` replacement. It may help navig
 
 ### `ARCHITECTURE.md`
 
-Static architectural knowledge:
+`ARCHITECTURE.md` is the main explanation of how the repository is shaped and why a maintainer should care about that shape. Keep it concise, but do not reduce it to a component inventory. A useful architecture document should answer these questions when the repository provides evidence:
 
-- system or library purpose
-- major components/modules and responsibilities
-- boundaries and dependency direction
-- data/state ownership
-- external systems and major dependencies
-- important static interaction paths
-- interface ownership at a high level
-- architecture-relevant constraints that are evidenced
-- links to relevant ADRs
-- open questions
+1. **Scope and context** — what does this repository own, who/what uses it, and what lies outside its boundary?
+2. **Architecture drivers** — which explicit requirements, quality goals, or hard constraints materially shape the architecture?
+3. **Solution strategy** — what top-level decomposition and mechanisms organize the implementation?
+4. **Building blocks and dependencies** — what are the major components, responsibilities, dependency directions, and owned state/data?
+5. **Cross-cutting concepts** — how are architecture-significant concerns such as security/trust, validation, errors, consistency, concurrency, caching, configuration boundaries, or extensibility handled when relevant?
+6. **Interactions, interfaces, decisions, and risks** — which representative flows and boundaries matter, which ADRs explain decisions, and which important risks or unknowns remain?
 
-Detailed contracts belong in `API_SURFACE.md`. Runtime procedures belong in `OPERATIONS.md`.
+These are content responsibilities, not a demand for long prose. Omit irrelevant subsections, but do not omit a material architecture topic merely to keep the file short. If an expected driver, rationale, or quality goal cannot be established, record it as missing instead of inventing it.
+
+Detailed contracts belong in `API_SURFACE.md`. Deployment topology, startup/run procedures, observability, operational failure handling, and recovery belong in `OPERATIONS.md`, except where a short reference is necessary to understand an architecture-significant boundary or flow.
 
 ### `API_SURFACE.md`
 
@@ -158,12 +156,13 @@ Use the smallest inspection set that supports the requested scope. Do not read t
    - CI workflows
    - main source/test directories
 
-3. **Trace important structure**
+3. **Trace important structure and architecture drivers**
    - entry points and public exports
-   - module/package boundaries
-   - dependency direction
-   - persistence and external integrations
-   - representative tests
+   - module/package boundaries and dependency direction
+   - explicit requirements, quality goals, compatibility/security constraints, and ADRs
+   - data/state ownership, persistence, and external integrations
+   - architecture-significant cross-cutting mechanisms
+   - representative tests that establish boundaries or invariants
 
 4. **Inspect runtime/contract evidence when relevant**
    - routes, schemas, event contracts, CLI registration
@@ -226,7 +225,9 @@ Do not fabricate a revision or timestamp. Use `unavailable` when it cannot be es
 
 A diagram is optional. Add one only when it explains structure or behavior more clearly than prose/table form.
 
-When a diagram is useful, use the `mermaiddoc` helper guidance and keep the diagram focused. Do not create a second architecture model merely because Mermaid is available.
+When a diagram is useful, use the `mermaiddoc` helper guidance and keep the diagram focused. `archdoc` remains responsible for the validity of Mermaid that it writes: use conservative GitHub-compatible syntax, quote human-readable flowchart labels (for example `Endpoint["Remote HTTP(S) endpoint"]`), and validate with an existing parser/renderer when one is available. If syntax is uncertain and cannot be validated, prefer prose or a table over a broken diagram.
+
+Do not create a second architecture model merely because Mermaid is available.
 
 ## Existing Documentation
 

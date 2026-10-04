@@ -16,16 +16,16 @@ Diagram type: flowchart LR
 
 ```mermaid
 flowchart LR
-    Caller[Caller] --> Facade[jwt.decode]
-    Facade --> Options[Merge options and select signature checks]
-    Options --> Load[Split token and decode header payload]
-    Load --> Header[Validate headers and b64 rules]
-    Header --> Verify{Verify signature?}
-    Verify -->|yes| Sig[Require algs and verify signature]
-    Verify -->|no| Parse[Skip signature verification]
+    Caller["Caller"] --> Facade["jwt.decode"]
+    Facade --> Options["Merge options and select signature checks"]
+    Options --> Load["Split token and decode header payload"]
+    Load --> Header["Validate headers and b64 rules"]
+    Header --> Verify{"Verify signature?"}
+    Verify -->|yes| Sig["Require algs and verify signature"]
+    Verify -->|no| Parse["Skip signature verification"]
     Sig --> Parse
-    Parse --> Claims[JSON-decode payload and validate claims]
-    Claims --> Result[Return payload dict]
+    Parse --> Claims["JSON-decode payload and validate claims"]
+    Claims --> Result["Return payload dict"]
 ```
 
 Notes:

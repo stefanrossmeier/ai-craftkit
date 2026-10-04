@@ -51,7 +51,7 @@ docs/archdoc/OPERATIONS.md     # when operational/runtime behavior is meaningful
 The responsibility split is deliberate:
 
 - `REPO_MAP.md`: repository orientation, important paths, entry points, commands, tests, generated paths, and observed conventions.
-- `ARCHITECTURE.md`: static architecture, boundaries, dependencies, state/data ownership, and high-level interface ownership.
+- `ARCHITECTURE.md`: architecture drivers, context, solution strategy, major building blocks, dependencies, state/data ownership, cross-cutting concepts, representative interactions, decisions, and risks.
 - `API_SURFACE.md`: detailed public and integration-relevant contracts.
 - `OPERATIONS.md`: runtime/build/release/deploy behavior, configuration, observability, failure handling, and verification.
 

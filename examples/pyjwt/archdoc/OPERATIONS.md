@@ -1,60 +1,47 @@
 # PyJWT Operations
 
-**Review Scope:** targeted static repository inspection
-**Doc Status:** MAINTAINED
-**Last Updated:** 2026-10-04T07:40:52Z
-**Updated By:** agent
-**Source Revision:** `7144e4534c34810f4525dc4578a32addd8212cff`
-**Source Basis:** `pyproject.toml`, `tox.ini`, `.readthedocs.yaml`, `.github/workflows/main.yml`, `.github/workflows/pypi-package.yml`, and package source
+> Review Scope: packaging, CI, documentation, and local verification configuration
+> Doc Status: MAINTAINED
+> Last Updated: 2026-10-04T08:21:17Z
+> Updated By: agent
+> Source Revision: 7144e4534c34810f4525dc4578a32addd8212cff
+> Source Basis: `pyproject.toml`, `tox.ini`, `.readthedocs.yaml`, `.github/workflows/`, `docs/conf.py`, and `README.rst`
 
-## Execution Model
-
-**Verified:** PyJWT runs inside a consuming Python process; it has no repository-owned service startup command, deployment manifest, database migration, or long-lived daemon. The meaningful operational surfaces are installation, verification, documentation builds, and package publication.
-
-Install the runtime library with:
-
-```console
-python -m pip install PyJWT
-python -m pip install 'PyJWT[crypto]'
-```
-
-The `crypto` extra installs `cryptography>=3.4.0`, needed for algorithms such as RSA, EC, and EdDSA. Without it, compatible HMAC-only use remains available.
+PyJWT is a distributable library, not a deployed service. Its meaningful operational behavior is installation, verification, documentation publishing, package publication, and the outbound HTTP(S) requests made only when an application uses `PyJWKClient`.
 
 ## Local Verification
 
-**Verified:** [`tox.ini`](../../tox.ini) defines the supported verification workflow. Run commands from the repository root after dependencies for the chosen environment are available.
+| Activity | Verified command/configuration |
+| --- | --- |
+| Normal test entry point | `tox` ([README.rst](../../README.rst)) |
+| Test environment | Pytest under Coverage; the tox matrix includes crypto and no-crypto environments ([tox.ini](../../tox.ini)) |
+| Lint | `tox -e lint`, running `pre-commit run --all-files` ([tox.ini](../../tox.ini)) |
+| Static typing | `tox -e py311-crypto-mypy`, with strict mypy configuration in [pyproject.toml](../../pyproject.toml) |
+| Documentation | `tox -e docs`, running warning-as-error HTML and doctest Sphinx builds plus doctests for the README and usage guide ([tox.ini](../../tox.ini)) |
+| Distribution | CI runs `python -m build` and `python -m twine check dist/*` ([.github/workflows/main.yml](../../.github/workflows/main.yml)) |
 
-| Goal | Command | Evidence |
-| --- | --- | --- |
-| Run the configured suite | `python -m tox` | [`README.rst`](../../README.rst), [`tox.ini`](../../tox.ini) |
-| Run a focused interpreter suite | `python -m tox -e py311` | [`tox.ini`](../../tox.ini) |
-| Lint all files | `python -m tox -e lint` | [`tox.ini`](../../tox.ini) |
-| Type-check | `python -m tox -e py311-mypy` | [`tox.ini`](../../tox.ini) |
-| Build HTML docs and doctests | `python -m tox -e docs` | [`tox.ini`](../../tox.ini) |
-| Build package artifacts | `python -m build` | [CI package job](../../.github/workflows/main.yml) |
+The declared baseline is Python 3.9. The tox and CI configurations test supported CPython versions, selected PyPy versions, crypto/no-crypto variants, and supported typing environments ([tox.ini](../../tox.ini), [.github/workflows/main.yml](../../.github/workflows/main.yml)).
 
-The test environments run `coverage run -m pytest`; the declared matrix covers CPython 3.9 through 3.14, PyPy 3.9 through 3.11, and with/without the `crypto` extra where configured. The docs environment uses Python 3.11 and treats Sphinx warnings as errors.
+## Installation And Dependencies
 
-## Configuration And Runtime Dependencies
+`pip install PyJWT` installs the base package. `PyJWT[crypto]` adds `cryptography>=3.4.0` for asymmetric algorithms; the only base runtime compatibility dependency is `typing_extensions` for Python versions below 3.11 ([pyproject.toml](../../pyproject.toml)).
 
-- **Verified:** Build backend: `setuptools.build_meta`; package metadata and dependency groups are in [`pyproject.toml`](../../pyproject.toml).
-- **Verified:** Runtime dependency: `typing_extensions >= 4.0` only below Python 3.11. Development, test, and documentation dependency groups are also declared there.
-- **Verified:** The JWKS client accepts configuration through Python constructor arguments: `headers`, `timeout` (default 30 seconds), and `ssl_context`; it only requests HTTP(S) URLs.
-- **Verified:** `SPHINX_BUILD` changes type-import behavior while Sphinx generates API documentation.
-- **Verified:** `CODECOV_TOKEN` is referenced by CI when uploading coverage; its value is supplied as a GitHub Actions secret and is not documented here.
+Dependency groups `tests`, `docs`, and `dev` are declared in [pyproject.toml](../../pyproject.toml). The Read the Docs configuration installs `.[crypto]` with the `docs` group under Python 3.11 and treats warnings as build failures ([.readthedocs.yaml](../../.readthedocs.yaml)).
 
-## CI, Documentation, And Release
+## Build And Release
 
-- **Verified:** [`main.yml`](../../.github/workflows/main.yml) runs on pushes and pull requests targeting `master`, plus manual dispatch. It tests Ubuntu and Windows across the configured CPython/PyPy versions, checks package metadata, and tests normal, crypto-extra, and editable installs on Ubuntu, Windows, and macOS.
-- **Verified:** The same workflow combines and uploads coverage from the Ubuntu/Python 3.9 run to Codecov.
-- **Verified:** [`.readthedocs.yaml`](../../.readthedocs.yaml) builds documentation on Ubuntu with Python 3.11, installs the crypto extra and docs group, and fails on Sphinx warnings.
-- **Verified:** [`pypi-package.yml`](../../.github/workflows/pypi-package.yml) builds and inspects packages, publishes development builds to TestPyPI on eligible `master` pushes, and publishes to PyPI when a GitHub release is published. Publishing uses GitHub OIDC trusted publishing (`id-token: write`).
+- **verified:** CI runs on pushes and pull requests targeting `master`, executes tox across an operating-system and interpreter matrix, combines/uploads coverage from Ubuntu Python 3.9, builds distributions, checks their long description, and verifies normal, crypto-extra, and editable development installs ([.github/workflows/main.yml](../../.github/workflows/main.yml)).
+- **verified:** the package workflow builds and inspects artifacts. Pushes to `master` in the upstream owner repository may publish to TestPyPI; published GitHub Releases may publish to PyPI using GitHub trusted publishing (`id-token: write`) ([.github/workflows/pypi-package.yml](../../.github/workflows/pypi-package.yml)).
+- **verified:** the package version is read from `jwt.__version__` through setuptools dynamic versioning ([pyproject.toml](../../pyproject.toml)).
 
-## Failure Handling And Observability
+## Runtime Network Behavior
 
-- **Verified:** Token, key, and remote-JWKS failures are represented by documented exception types; callers need to catch or report them in their own process.
-- **Verified:** JWKS retrieval converts network and timeout errors to `PyJWKClientConnectionError`. A signing-key miss refreshes the cached set once before `PyJWKClientError` is raised.
-- **Verified:** The JWK-set cache is only replaced after a successful fetch, preserving a previously cached value through fetch errors.
-- **Missing:** No repository-owned logs, metrics, traces, health endpoint, deployment rollback procedure, or production alerting configuration was found. Consumer applications own those concerns.
+Most library paths are local computation. `PyJWKClient` is the network exception: it uses `urllib.request` to fetch a configured JWKS URI, permits only HTTP(S), and exposes caller-selected headers, timeout (default 30 seconds), and SSL context. A successful response can populate an in-memory JWKS cache with default lifespan 300 seconds; network failures become `PyJWKClientConnectionError` ([jwt/jwks_client.py](../../jwt/jwks_client.py)).
 
-Public Python behavior is documented in [API_SURFACE.md](API_SURFACE.md); static component boundaries are documented in [ARCHITECTURE.md](ARCHITECTURE.md).
+For a missing `kid`, the client refreshes the JWKS once before failing. A failed fetch does not overwrite a previously cached JWKS; this regression behavior is covered in [tests/test_jwks_client.py](../../tests/test_jwks_client.py).
+
+## Configuration And Observability
+
+- **verified:** `SPHINX_BUILD` is set by [docs/conf.py](../conf.py) to make type aliases available to Sphinx during documentation builds.
+- **verified:** CI references the `CODECOV_TOKEN` secret only for coverage upload ([.github/workflows/main.yml](../../.github/workflows/main.yml)); this document intentionally does not contain its value.
+- **missing:** no application runtime environment-variable configuration, logging, metrics, tracing, health endpoint, deployment topology, or recovery runbook was found. Those concerns belong to applications that embed the library.

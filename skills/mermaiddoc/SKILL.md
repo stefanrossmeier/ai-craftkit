@@ -74,6 +74,8 @@ Keep diagrams deliberately small.
 
 - use stable simple node IDs such as `API`, `Service`, `DB`
 - keep visible labels short
+- **quote human-readable flowchart labels by default**, for example `API["Public API"]`; Mermaid reserves punctuation such as parentheses inside unquoted labels
+- use conservative shapes such as `Node["Label"]`, `Decision{"Question?"}`, and `Store[("Store")]`
 - prefer left-to-right flowcharts unless another direction is clearly better
 - avoid decorative styling, custom colors, icons, HTML-heavy labels, and layout tricks
 - avoid edge crossings where a simpler grouping or smaller diagram would work
@@ -86,9 +88,9 @@ A useful default target is roughly 5–12 nodes/participants. This is a readabil
 
 ```mermaid
 flowchart LR
-    Client[Client] --> API[API]
-    API --> Service[Service]
-    Service --> Store[(Store)]
+    Client["Client"] --> API["API"]
+    API --> Service["Service"]
+    Service --> Store[("Store")]
 ```
 
 Use subgraphs sparingly and only when they clarify a real boundary.
@@ -126,9 +128,11 @@ Before finishing:
 
 - check that node/participant IDs are unique
 - check arrows and message direction
-- check labels for problematic quoting or line breaks
+- for flowcharts, prefer quoted visible labels even when the current label looks simple; this avoids later parse failures when punctuation such as `(`, `)`, `[`, `]`, `{`, `}`, quotes, or other reserved syntax is introduced
 - keep syntax within standard GitHub-supported Mermaid features
-- if a Mermaid renderer/parser is already available, use it when convenient
+- avoid raw line breaks, HTML-heavy labels, or clever syntax when a simple quoted label works
+- if a Mermaid renderer/parser is already available, use it; a rendered result is stronger evidence than visual inspection of the source
+- if no parser is available, manually scan every label with punctuation and fall back to prose/table form if the syntax is uncertain
 - do not install tooling merely to validate a small diagram unless the user asks
 
 The examples in [`examples/mermaiddoc-examples.md`](examples/mermaiddoc-examples.md) are reference patterns, not mandatory templates.

@@ -25,6 +25,6 @@ Unlike the earlier version, the skill does not own a default `docs/diagrams/` di
 - one retry/failure sequence
 - one small process or decision flow
 
-Keep labels short, use simple stable IDs, avoid decorative styling, and inspect only the repository area needed for the requested diagram.
+Keep labels short, use simple stable IDs, and quote human-readable flowchart labels by default (for example `Endpoint["Remote HTTP(S) endpoint"]`). Mermaid punctuation can otherwise be parsed as diagram syntax. Avoid decorative styling and inspect only the repository area needed for the requested diagram.
 
 See [`SKILL.md`](SKILL.md) for the rules and [`examples/mermaiddoc-examples.md`](examples/mermaiddoc-examples.md) for compact patterns.
