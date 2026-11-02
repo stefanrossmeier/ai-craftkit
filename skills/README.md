@@ -25,6 +25,7 @@ The description is part of skill routing. Keep it concrete enough that an agent 
 | `c4doc` | Optional C4-style documentation | `docs/c4-documentation/` |
 | `cockburn-review` | Point-in-time boundary review | review report |
 | `overengineering-review` | Point-in-time complexity review | review report |
+| `review-board` | Multi-agent VS Code code review (3 discovery lenses + 2 blind verification votes) | review report |
 
 ## Shared design principles
 
